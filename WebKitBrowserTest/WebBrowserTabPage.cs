@@ -29,6 +29,14 @@ using System.ComponentModel;            /* {@@} */
 using System.Runtime.InteropServices;   /* {@@} */
 using System.Windows.Forms;
 using WebKit;
+using WebKit.JSCore;
+using WebKit.Interop;
+using System;
+using System.ComponentModel;
+using System.Threading;
+using System.IO;
+using System.Reflection;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace WebKitBrowserTest
@@ -38,7 +46,7 @@ namespace WebKitBrowserTest
         public void f()
         {
             MessageBox.Show("Hey!");
-        }
+        }    
 
 
         public string foo(string bar)
@@ -59,6 +67,55 @@ namespace WebKitBrowserTest
             }
         }
     }
+
+    public class TestClass
+    {
+        public JSContext ctx { get; set; }
+
+        public class InnerClass
+        {
+            public string Testing { get; set; }
+        }
+
+        public InnerClass getInner()
+        {
+            return new InnerClass() { Testing = "testing" };              
+        }
+
+        public float[] getArray()
+        {
+            return new float[] { 1, 2, 5 };
+        }
+
+        public void associativeArray(Dictionary<object, object> x)
+        {
+            object[] a = (object[]) x["y"];
+            MessageBox.Show("" + x["x"] + " " + a[0] + " " + a[1] + " l=" + a.GetLength(0));
+        }
+
+        public void callback(Delegate callback)
+        {            
+            object[] x = { "first" };
+            
+            string result = (string) callback.DynamicInvoke(new object[] {x});
+            MessageBox.Show(result);
+            var worker = new BackgroundWorker();
+            worker.DoWork += delegate
+            {
+                Thread.Sleep(1000);
+            };
+            worker.RunWorkerCompleted += delegate
+            {
+                callback.DynamicInvoke(new object[] {x});
+            };
+            worker.RunWorkerAsync();
+        }
+        public string x { get; set; }
+        public string y { get; set; }
+        public double i { get; set; }
+        public bool b { get; set; }
+    }
+
 
     public partial class WebBrowserTabPage : TabPage
     {
@@ -110,6 +167,9 @@ namespace WebKitBrowserTest
             container.BottomToolStripPanel.Controls.Add(statusStrip);
 
             // create webbrowser control
+
+            //IWebView wv = (IWebView)browserControl.GetWebView();
+            
             browser = browserControl;
             browser.Visible = true;
             browser.Dock = DockStyle.Fill;
@@ -118,7 +178,7 @@ namespace WebKitBrowserTest
             //browser.IsScriptingEnabled = false;
             container.ContentPanel.Controls.Add(browser);
 
-            browser.ObjectForScripting = new TestScriptObject();
+            browser.ObjectForScripting = new TestClass();
 
             // context menu
 
@@ -134,8 +194,11 @@ namespace WebKitBrowserTest
             browser.ProgressChanged += (s, e) => { progressBar.Value = e.ProgressPercentage; };
             browser.ProgressFinished += (s, e) => { progressBar.Visible = false; };
             if (goHome)
-                browser.Navigate("http://www.google.com");
-
+            {
+                string appPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase);
+                string htmlPath = Path.Combine(appPath, "index.html");
+                browser.Navigate(Uri.EscapeUriString(new Uri(htmlPath).ToString()));
+            }
             browser.ShowJavaScriptAlertPanel += (s, e) => MessageBox.Show(e.Message, "[JavaScript Alert]");
             browser.ShowJavaScriptConfirmPanel += (s, e) =>
             {

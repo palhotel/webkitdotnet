@@ -5,6 +5,11 @@
 #include "JSObject.h"
 #include "JSContext.h"
 
+JSContext::JSContext()
+{
+    _context = JSGlobalContextCreate(NULL);
+    _contextCreated = true;
+}
 
 JSContext::JSContext()
 {

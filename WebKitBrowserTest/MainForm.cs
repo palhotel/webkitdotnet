@@ -266,12 +266,11 @@ namespace WebKitBrowserTest
 var myDog;
 
 window.onload = function() {
-  
-}
-function test() {
+  setTimeout(function() {
     window.external.callback(function(x) { 
         alert('hello ' + x); 
-    });
+    });  
+  }, 100);
 }
 </script>
 </head>
@@ -280,36 +279,28 @@ function test() {
 </body>
 </html>
 ";
+            JSContext ctx = (JSContext)currentPage.browser.GetGlobalScriptContext();
+
+            TestClass myTest = new TestClass();
+            currentPage.browser.ObjectForScripting = myTest;
         }
 
         private void test3ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             JSContext ctx = (JSContext)currentPage.browser.GetGlobalScriptContext();
-            
-                    /*MessageBox.Show("breed = " + dog.GetProperty("breed").ToString());
-                    dog.SetProperty("breed", "Border Collie");
-                    MessageBox.Show("breed = " + dog.GetProperty("breed").ToString());
-                    dog.SetProperty("name", "Holly");
-                    MessageBox.Show("name = " + dog.GetProperty("name").ToString());*/
-            TestClass myTest = new TestClass();
+
+            TestClass myTest = new TestClass()
+            {
+                ctx = ctx
+            };
             currentPage.browser.ObjectForScripting = myTest;
             
-            ctx.EvaluateScript("test()");
+            //ctx.EvaluateScript("test()");
    
-                    //ctx.GarbageCollect();
+            //ctx.GarbageCollect();
         }
 
-        private class TestClass
-        {
-            public void callback(Delegate callback)
-            {                
-                callback.DynamicInvoke("world");                
-            }
-            public string x { get; set; }
-            public string y { get; set; }
-            public double i { get; set; }
-            public bool b { get; set; }
-        }
+       
 
         private void setPasswordToolStripMenuItem_Click(object sender, EventArgs e)
         {

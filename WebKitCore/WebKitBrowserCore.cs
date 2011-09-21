@@ -753,7 +753,7 @@ namespace WebKit
             Error(this, new WebKitBrowserErrorEventArgs(error.localizedDescription())); 
         }
 
-        private void frameLoadDelegate_DidClearWindowObject(WebView WebView, IntPtr context, IntPtr windowScriptObject, webFrame frame)
+        private void frameLoadDelegate_DidClearWindowObject(WebView WebView, IntPtr context, IntPtr windowScriptObject, IWebFrame frame)
         {
             CreateWindowScriptObject(new JSContext(context));
         }
@@ -891,7 +891,7 @@ namespace WebKit
                 activationContext.Activate();
 
                 WebMutableURLRequest request = new WebMutableURLRequestClass();
-                request.initWithURL(url, _WebURLRequestCachePolicy.WebURLRequestUseProtocolCachePolicy, 60);
+                request.initWithURL(url, _WebURLRequestCachePolicy.WebURLRequestReloadIgnoringCacheData, 60);
                 request.setHTTPMethod("GET");
 
                 //use basic authentication if username and password are supplied.

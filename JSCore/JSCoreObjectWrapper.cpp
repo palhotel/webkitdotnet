@@ -27,28 +27,7 @@ JSClassDefinition wrapperClass =
                              /* JSObjectConvertToTypeCallback convertToType; */
 };
 
-ref class CallbackClass
-{
-public:
-	CallbackClass(JSContextRef ctx, JSObjectRef jsFunction) : ctx_(ctx), jsFunction_(jsFunction)
-	{
-	}   
-	
-	void callbackFunction(Object^ object)
-	{
-		if (object == NULL) {
-			JSObjectCallAsFunction(ctx_, jsFunction_, NULL, 0, NULL, NULL);	   
-		} else {
-			JSValueRef arg = getJSValueRefFromObject(ctx_, object, NULL);
-			JSValueRef arguments[] = {arg};
-			JSObjectCallAsFunction(ctx_, jsFunction_, NULL, 1, arguments, NULL);	   
-		}
-   }
-
-private:
-	JSObjectRef jsFunction_;
-	JSContextRef ctx_;
-};
+Object ^ getObjectFromJSValueRef(JSContextRef ctx, Type ^ type, JSValueRef value, JSValueRef * exception);
 
 GCHandle getHandleFromJSObjectRef(JSObjectRef object)
 {
@@ -56,12 +35,89 @@ GCHandle getHandleFromJSObjectRef(JSObjectRef object)
 	return GCHandle::FromIntPtr(IntPtr(ptr));
 }
 
+public delegate Object^ EventDelegate(array<Object^>^ args);
+
+ref class DelegateFunctionWrapper
+{
+public:
+	DelegateFunctionWrapper(JSContextRef _context, JSObjectRef _func) : context(_context), func(_func)
+    {       		
+		JSGlobalContextRetain((JSGlobalContextRef)context);
+        nativeCallback_ = gcnew EventDelegate(this, &DelegateFunctionWrapper::Callback);
+        delegateHandle_ = GCHandle::Alloc(nativeCallback_);
+    }
+
+    ~DelegateFunctionWrapper()
+    {
+        if (delegateHandle_.IsAllocated)
+			delegateHandle_.Free();
+
+		JSGlobalContextRelease((JSGlobalContextRef)context);	
+    }
+
+	EventDelegate^ CallbackFunction() {
+		return nativeCallback_;
+	}
+
+
+private:
+	GCHandle delegateHandle_;
+    EventDelegate^ nativeCallback_;
+	JSObjectRef func;	
+	JSContextRef context;
+	
+    Object^ Callback(array<Object^>^ args)
+    {							
+		JSValueRef *arguments = new JSValueRef[args->Length];
+		for(int i = 0; i < args->Length; i++)
+		{
+			arguments[i] = getJSValueRefFromObject(context, args[i], NULL);
+		}
+
+		JSValueRef ret = JSObjectCallAsFunction(context, func, NULL, args->Length, arguments, NULL);	   
+		Object^ retObj = nullptr;
+		if (ret) {
+			Type^ t = nullptr;
+			retObj = getObjectFromJSValueRef(context, t, ret, NULL);			
+		}
+
+		return retObj;
+    }
+};
+
+bool JSValueIsArray(JSContextRef ctx, JSValueRef value) {
+
+	JSObjectRef global = JSContextGetGlobalObject(ctx);
+	JSValueRef arrayVal = JSObjectGetProperty(ctx, global, JSCoreMarshal::StringToJSString("Array"), NULL);
+
+	if (JSValueIsObject(ctx, arrayVal)) {
+		JSObjectRef arrayObj = JSValueToObject(ctx, arrayVal, NULL);
+		if (JSObjectIsFunction(ctx, arrayObj) || JSObjectIsConstructor(ctx, arrayObj)) {
+			return JSValueIsInstanceOfConstructor(ctx, value, arrayObj, NULL);
+		}
+	}
+	
+	return false;
+};
 
 Object ^ getObjectFromJSValueRef(JSContextRef ctx, Type ^ type, JSValueRef value, JSValueRef * exception)
 {
 	Object ^ val;
+	if (type == nullptr) {
+		type = JSValueIsString(ctx, value) ? String::typeid :
+			JSValueIsBoolean(ctx, value) ? bool::typeid :
+			JSValueIsNumber(ctx, value) ? double::typeid : nullptr;
+	}
 
-    if (type == double::typeid)
+	if (type == int::typeid)
+	{
+		val = (int)JSValueToNumber(ctx, value, exception);
+	}
+	else if (type == float::typeid)
+	{
+		val = (float)JSValueToNumber(ctx, value, exception);
+	}
+	else if (type == double::typeid)
     {
         val = JSValueToNumber(ctx, value, exception);
     }
@@ -72,17 +128,55 @@ Object ^ getObjectFromJSValueRef(JSContextRef ctx, Type ^ type, JSValueRef value
     else if (type == String::typeid)
     {
         JSStringRef temp = JSValueToStringCopy(ctx, value, exception);
-        if (!*exception)
-        {
-            val = JSCoreMarshal::JSStringToString(temp);
-            JSStringRelease(temp);
-        }
+        val = JSCoreMarshal::JSStringToString(temp);
+        JSStringRelease(temp);
     }
-	else if (JSObjectIsFunction(ctx, (JSObjectRef) value)) {	
-		// FIXME: Only supports one argument, void functions
-		CallbackClass^ cls = gcnew CallbackClass(ctx, JSValueToObject(ctx, value, NULL));
-		callbackFunction^ myCallback = gcnew callbackFunction(cls, &CallbackClass::callbackFunction);
-		val = myCallback;		
+	else if (JSObjectIsFunction(ctx, (JSObjectRef) value))
+	{	
+		// Create a delegate wrapper around function
+		JSObjectRef functionObj = JSValueToObject(ctx, value, exception);		
+		DelegateFunctionWrapper^ ni = gcnew DelegateFunctionWrapper(ctx, functionObj);
+		val = ni->CallbackFunction();
+	}
+	else if (JSValueIsArray(ctx, value)) 
+	{
+		JSObjectRef o = JSValueToObject(ctx, value, NULL);	
+		JSPropertyNameArrayRef properties = JSObjectCopyPropertyNames(ctx, o);
+		size_t count =  JSPropertyNameArrayGetCount(properties);
+		JSPropertyNameArrayRelease(properties);
+		
+		array<Object^>^ results = gcnew array<Object^>(count);
+
+		for (size_t i = 0; i < count; i++) {						
+			JSValueRef propertyValue = JSObjectGetPropertyAtIndex(ctx, o, i, NULL);
+			Object^ value = getObjectFromJSValueRef(ctx, nullptr, propertyValue, NULL);
+
+			results->SetValue(value, (int) i);
+		}
+
+		val = results;
+	} 
+	else if (JSValueIsObject(ctx, value))
+	{
+		JSObjectRef o = (JSObjectRef)value; //JSValueToObject(ctx, value, NULL);
+		JSPropertyNameArrayRef properties = JSObjectCopyPropertyNames(ctx, o);
+		size_t count = JSPropertyNameArrayGetCount(properties);
+		
+		System::Collections::Generic::Dictionary<Object^, Object^>^ resultsDict = gcnew System::Collections::Generic::Dictionary<Object^, Object^>();
+
+		for (size_t i = 0; i < count; i++) {
+			JSStringRef jsNameRef = JSPropertyNameArrayGetNameAtIndex(properties, i);
+			
+			String^ name = JSCoreMarshal::JSStringToString(jsNameRef);
+			JSValueRef propertyValue = JSObjectGetProperty(ctx, o, jsNameRef, NULL);
+			Object^ value = getObjectFromJSValueRef(ctx, nullptr, propertyValue, NULL);
+
+			resultsDict->Add((Object^)name, value);
+		}
+
+		JSPropertyNameArrayRelease(properties);
+
+		val = resultsDict;
 	}
 	return val;
 }
@@ -92,25 +186,41 @@ JSValueRef getJSValueRefFromObject(JSContextRef ctx, Object ^ object, JSValueRef
 {
     Type ^ type = object->GetType();
     JSValueRef val;
+
     if(object == nullptr)
     {
         return JSValueMakeUndefined(ctx);
     }
+	if (type == float::typeid)
+	{
+		float floatVal = (float)object;
+		return JSValueMakeNumber(ctx, (double)floatVal);
+	}
     if(type == double::typeid)
-    {
+    {				
         return JSValueMakeNumber(ctx, (double)object);
-    }
+    }	
     if(type == bool::typeid)
     {
         return JSValueMakeBoolean(ctx, (bool)object);
     }
     if(type == String::typeid)
-    {
-        JSStringRef temp = JSCoreMarshal::StringToJSString((String ^)object);
+    {		
+        JSStringRef temp = JSCoreMarshal::StringToJSString((String ^)object);		
         val = JSValueMakeString(ctx, temp);
         JSStringRelease(temp);
         return val;
     }
+	if (type->IsArray) {
+		Array ^arr = (Array^)object;
+		JSValueRef *arguments = new JSValueRef[arr->Length];
+		for(int i = 0; i < arr->Length; i++)
+		{
+			arguments[i] = getJSValueRefFromObject(ctx, arr->GetValue(i), NULL);
+		}
+		val = JSObjectMakeArray(ctx, arr->Length, arguments, NULL);
+		return val;
+	}
     else
     {
         JSClassRef wrap = JSClassCreate(&wrapperClass);
@@ -141,32 +251,38 @@ void wrapper_Finalize(JSObjectRef object)
 bool wrapper_HasProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName)
 {
     Object ^ obj = getObjectFromJSObjectRef(object);
-
     String ^ propName = JSCoreMarshal::JSStringToString(propertyName);
-    MethodInfo ^ method = obj->GetType()->GetMethod(propName);
-    return obj->GetType()->GetProperty(propName) != nullptr || obj->GetType()->GetMethod(propName) != nullptr;
+	Type ^type = obj->GetType();
+
+	return type->GetProperty(propName) != nullptr ||
+		   type->GetField(propName) != nullptr ||
+		   type->GetMethod(propName) != nullptr;
 }
 
 JSValueRef wrapper_GetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception)
 {
     Object ^ obj = getObjectFromJSObjectRef(object);
-
     String ^ propName = JSCoreMarshal::JSStringToString(propertyName);
+
     PropertyInfo ^ prop = obj->GetType()->GetProperty(propName);
     if (prop != nullptr)
-    {
-        // for the moment, just return as string
+    {       
         if (prop->CanRead)
-        {
-            String ^ val = prop->GetValue(obj, nullptr)->ToString();
-            JSStringRef jsStr = JSCoreMarshal::StringToJSString(val);
-            return JSValueMakeString(ctx, jsStr);
+        {			
+			Object ^propObj = prop->GetValue(obj, nullptr);
+			return getJSValueRefFromObject(ctx, propObj, NULL);
         }
         else
         {
-            // exception?
+			return NULL;            
         }
     }
+
+	FieldInfo ^field = obj->GetType()->GetField(propName);
+    if (field != nullptr) {
+		Object ^fieldObj = field->GetValue(obj);
+		return getJSValueRefFromObject(ctx, fieldObj, NULL);
+	}
 
 	MethodInfo ^ method = obj->GetType()->GetMethod(propName);
 	if(method != nullptr)
@@ -237,11 +353,11 @@ JSValueRef wrapper_CallAsFunction (JSContextRef ctx, JSObjectRef function, JSObj
     }
 
     cli::array<Object ^, 1> ^ args = gcnew cli::array<Object ^, 1>(parameters->Length);
-    for(int i = 0; i < argumentCount; i++)
+    for(size_t i = 0; i < argumentCount; i++)
     {
-        ParameterInfo ^ parameter = (ParameterInfo ^)parameters->GetValue(i);
+        ParameterInfo ^ parameter = (ParameterInfo ^)parameters->GetValue((int)i);
         Object ^ val = getObjectFromJSValueRef(ctx, parameter->ParameterType, arguments[i], exception);
-        args->SetValue(val, i);
+        args->SetValue(val, (int)i);
     }
 
     Object ^ ret = method->Invoke(obj, args);
