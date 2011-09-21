@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2009, Peter Nelson (charn.opcode@gmail.com)
  * All rights reserved.
  * 
@@ -85,6 +85,8 @@ namespace WebKitBrowserTest
             currentPage.browser.DownloadBegin += new FileDownloadBeginEventHandler(browser_DownloadBegin);
             currentPage.browser.NewWindowRequest += new NewWindowRequestEventHandler(browser_NewWindowRequest);
             currentPage.browser.NewWindowCreated += new NewWindowCreatedEventHandler(browser_NewWindowCreated);
+
+            currentPage.WindowClosing += new EventHandler(currentPage_WindowClosing);   /* {@@} */
         }
 
         void browser_NewWindowCreated(object sender, NewWindowCreatedEventArgs args)
@@ -135,6 +137,8 @@ namespace WebKitBrowserTest
             currentPage.browser.DocumentTitleChanged -= browser_DocumentTitleChanged;
             currentPage.browser.NewWindowCreated -= browser_NewWindowCreated;
             currentPage.browser.NewWindowRequest -= browser_NewWindowRequest;
+
+            currentPage.WindowClosing -= currentPage_WindowClosing; /* {@@} */
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -247,7 +251,10 @@ namespace WebKitBrowserTest
         {
             JSContext ctx = (JSContext)currentPage.browser.GetGlobalScriptContext();
             JSValue val = ctx.EvaluateScript("f()");
-            MessageBox.Show(val.ToString());
+            if (val != null)
+                MessageBox.Show(val.ToString());
+            else
+                MessageBox.Show("Execute 'Test Page', first.", "Uggggmmmm...");
         }
 
         private void jSTestPageToolStripMenuItem_Click(object sender, EventArgs e)
@@ -297,24 +304,31 @@ function testtest(dog) {
         private void test3ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             JSContext ctx = (JSContext)currentPage.browser.GetGlobalScriptContext();
-            JSObject dog = ctx.EvaluateScript("someDog(12, \"Golden Retriever\");").ToObject();
-            if (dog != null)
+            try
             {
-                if (dog.HasProperty("breed"))
+                JSObject dog = ctx.EvaluateScript("someDog(12, \"Golden Retriever\");").ToObject();
+                if (dog != null)
                 {
-                    /*MessageBox.Show("breed = " + dog.GetProperty("breed").ToString());
-                    dog.SetProperty("breed", "Border Collie");
-                    MessageBox.Show("breed = " + dog.GetProperty("breed").ToString());
-                    dog.SetProperty("name", "Holly");
-                    MessageBox.Show("name = " + dog.GetProperty("name").ToString());*/
-                    ctx.EvaluateScript("printDog(myDog)");
-                    TestClass myTest = new TestClass() { x = "testing" };
-                    dog.SetProperty("test", myTest);
-                    ctx.EvaluateScript("testtest(myDog)");
-                    //ctx.GarbageCollect();
+                    if (dog.HasProperty("breed"))
+                    {
+                        /*MessageBox.Show("breed = " + dog.GetProperty("breed").ToString());
+                        dog.SetProperty("breed", "Border Collie");
+                        MessageBox.Show("breed = " + dog.GetProperty("breed").ToString());
+                        dog.SetProperty("name", "Holly");
+                        MessageBox.Show("name = " + dog.GetProperty("name").ToString());*/
+                        ctx.EvaluateScript("printDog(myDog)");
+                        TestClass myTest = new TestClass() { x = "testing" };
+                        dog.SetProperty("test", myTest);
+                        ctx.EvaluateScript("testtest(myDog)");
+                        //ctx.GarbageCollect();
 
-                    MessageBox.Show(String.Format("y = {0}, i = {1}, b = {2}", myTest.y, myTest.i, myTest.b));
+                        MessageBox.Show(String.Format("y = {0}, i = {1}, b = {2}", myTest.y, myTest.i, myTest.b));
+                    }
                 }
+            }
+            catch
+            {
+                MessageBox.Show("Execute 'JS Test Page', first.", "Uggggmmmm...");
             }
         }
 
@@ -335,5 +349,14 @@ function testtest(dog) {
                 currentPage.browser.UserName = passDG.Username;
             }
         }
+
+        /* {@@} */
+        private void currentPage_WindowClosing(object sender, EventArgs e)
+        {
+            WebBrowserTabPage tab = (WebBrowserTabPage)sender;
+            if (tab == currentPage)
+                closeTabToolStripMenuItem_Click(sender, e);
+        }
+        /* {@@} */
     }
 }

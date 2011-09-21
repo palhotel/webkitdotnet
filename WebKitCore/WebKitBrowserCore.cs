@@ -1086,5 +1086,13 @@ namespace WebKit
                     window.SetProperty("external", (object)ObjectForScripting);
             }
         }
+
+        public event EventHandler ContextMenuOpen;  /* {@@} */
+        public void ContextMenuShow()               /* {@@} */
+        {                                           /* {@@} */
+            EventArgs e = new EventArgs();          /* {@@} */
+            if (ContextMenuOpen != null)            /* {@@} */
+                ContextMenuOpen(this, e);           /* {@@} */
+        }                                           /* {@@} */
     }
 }

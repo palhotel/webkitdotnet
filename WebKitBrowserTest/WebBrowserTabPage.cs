@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2009, Peter Nelson (charn.opcode@gmail.com)
  * All rights reserved.
  * 
@@ -24,6 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
 */
 
+using System;                           /* {@@} */
+using System.ComponentModel;            /* {@@} */
+using System.Runtime.InteropServices;   /* {@@} */
 using System.Windows.Forms;
 using WebKit;
 
@@ -90,7 +93,7 @@ namespace WebKitBrowserTest
             browser.Visible = true;
             browser.Dock = DockStyle.Fill;
             browser.Name = "browser";
-            //browser.IsWebBrowserContextMenuEnabled = false;
+            browser.IsWebBrowserContextMenuEnabled = false; /* {@@} */
             //browser.IsScriptingEnabled = false;
             container.ContentPanel.Controls.Add(browser);
 
@@ -123,7 +126,233 @@ namespace WebKitBrowserTest
                 if (frm.ShowDialog() == DialogResult.OK)
                     e.ReturnValue = frm.Value;
             };
+
+            /* {@@} */
+            if (!browser.IsWebBrowserContextMenuEnabled)
+            {
+                CreateContextMenu();
+             // ContextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(ContextMenuStrip_Opening);
+                browser.ContextMenuOpen += new EventHandler(ContextMenuStrip_Opening2);
+            }
+            /* {@@} */
         }
+
+        /* {@@} */
+        #region Original ContextMenu of this browser
+        #region CreateContextMenu
+        private void AddContextMenu(
+            string textString, string targetString, Keys shortCutKey)
+        {
+            ToolStripMenuItem item = new ToolStripMenuItem();
+            item.Text = textString;
+            item.Tag = targetString;
+            item.ShortcutKeys = shortCutKey;
+            item.Click += new EventHandler(ContextMenu_Click);
+            ContextMenuStrip.Items.Add(item);
+        }
+
+        private void AddSeparator()
+        {
+            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+        }
+
+        public void CreateContextMenu()
+        {
+            if (ContextMenuStrip != null)
+                ContextMenuStrip.Dispose();
+
+            ContextMenuStrip = new ContextMenuStrip();
+            ContextMenuStrip.AllowMerge = true;
+
+            AddContextMenu(
+                "test",
+                "Test",
+                0);
+            AddSeparator();
+            AddContextMenu(
+                "Close tab",
+                "CloseTab",
+                0);
+            AddContextMenu(
+                "Forward",
+                "GoForward",
+                0);
+            AddContextMenu(
+                "Back",
+                "GoBack",
+                0);
+            AddContextMenu(
+                "Reload",
+                "Reload",
+                0);
+            AddSeparator();
+            AddContextMenu(
+                "Properties",
+                "ShowPropertiesDialog",
+                Keys.Control | Keys.P);
+            AddContextMenu(
+                "View source",
+                "ViewSource",
+                Keys.Control | Keys.S);
+            AddContextMenu(
+                "Print",
+                "Print",
+                Keys.Control | Keys.I);
+            AddContextMenu(
+                "Preview print",
+                "PrintPreview",
+                Keys.Control | Keys.N);
+        }
+        #endregion
+
+        #region DisposeContextMenu
+        public void DisposeContextMenu()
+        {
+            if (browser.IsWebBrowserContextMenuEnabled)
+            {
+             // ContextMenuStrip.Opening -= new CancelEventHandler(ContextMenuStrip_Opening);
+                browser.ContextMenuOpen -= new EventHandler(ContextMenuStrip_Opening2);
+            }
+        }
+        #endregion
+
+        #region Event handler for ContextMenu
+        void ContextMenuStrip_Opening(object sender, CancelEventArgs e)
+        {
+            int count = ContextMenuStrip.Items.Count;
+            for (int i = 0; i < count; i++)
+            {
+                ToolStripItem item = ContextMenuStrip.Items[i];
+
+                item.Enabled = true;
+                item.Visible = true;
+
+                if (item.Text == "Properties")
+                {
+                    item.Enabled = false;
+                    item.Visible = true;
+                }
+
+                if (browser.DocumentText == string.Empty)
+                {
+                    if (item.Text == "Reload" ||
+                        item.Text == "View source" ||
+                        item.Text == "Print" ||
+                        item.Text == "Preview print")
+                    {
+                        item.Enabled = false;
+                        item.Visible = false;
+                    }
+                }
+
+                if (!browser.CanGoBack)
+                {
+                    if (item.Text == "Back")
+                    {
+                        item.Enabled = false;
+                        item.Visible = false;
+                    }
+                }
+
+                if (!browser.CanGoForward)
+                {
+                    if (item.Text == "Forward")
+                    {
+                        item.Enabled = false;
+                        item.Visible = false;
+                    }
+                }
+            }
+        }
+
+        void ContextMenuStrip_Opening2(object sender, EventArgs e)
+        {
+            CancelEventArgs ce = new CancelEventArgs(false);
+            ContextMenuStrip_Opening(sender, ce);
+            if (ce.Cancel == false)
+            {
+                int x = Cursor.Position.X;
+                int y = Cursor.Position.Y;
+                ContextMenuStrip.Show(x + 10, y + 10);
+            }
+        }
+
+        void ContextMenu_Click(object sender, EventArgs e)
+        {
+            string value = (string)(((ToolStripMenuItem)sender).Tag);
+            if (value == "Test")
+                MessageBox.Show("test!!!", "via Original ContextMenu");
+            else if (value == "ViewSource")
+            {
+                if (browser.DocumentText.Length > 0)
+                {
+                    SourceViewForm dlg = new SourceViewForm(browser.DocumentText, browser);
+                    dlg.Show();
+                }
+            }
+            else if (value == "Print")
+            {
+                if (browser.DocumentText.Length > 0)
+                    browser.Print();
+            }
+            else if (value == "PrintPreview")
+            {
+                if (browser.DocumentText.Length > 0)
+                    browser.ShowPrintPreviewDialog();
+            }
+            else if (value == "GoBack")
+                browser.GoBack();
+            else if (value == "GoForward")
+                browser.GoForward();
+            else if (value == "Reload")
+                browser.Reload();
+            else if (value == "CloseTab")
+                OnWindowClosing(new EventArgs());
+        }
+        #endregion
+        #endregion
+
+        #region window.close()
+        public enum GetWindowCmd
+        {
+            GW_HWNDFIRST = 0,
+            GW_HWNDLAST = 1,
+            GW_HWNDNEXT = 2,
+            GW_HWNDPREV = 3,
+            GW_OWNER = 4,
+            GW_CHILD = 5,
+            GW_ENABLEDPOPUP = 6
+        }
+
+        [DllImport("user32.dll")]
+        extern public static IntPtr GetWindow(IntPtr hWnd, GetWindowCmd cmd);
+        protected override void WndProc(ref Message m)
+        {
+            const uint WM_PARENTNOTIFY = 0x0210;
+            const uint WM_DESTROY = 0x0002;
+
+            if (m.Msg == WM_PARENTNOTIFY)
+            {
+                if (m.WParam.ToInt32() == WM_DESTROY)
+                {
+                    if (m.LParam == GetWindow(Handle, GetWindowCmd.GW_CHILD))
+                    {
+                        OnWindowClosing(new EventArgs());
+                    }
+                }
+            }
+
+            base.WndProc(ref m);
+        }
+
+        public event EventHandler WindowClosing;
+        protected virtual void OnWindowClosing(EventArgs e)
+        {
+            if (WindowClosing != null)
+                WindowClosing(this, e);
+        }
+        #endregion
+        /* {@@} */
 
         public void Stop()
         {
