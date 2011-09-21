@@ -29,6 +29,7 @@ using System.ComponentModel;            /* {@@} */
 using System.Runtime.InteropServices;   /* {@@} */
 using System.Windows.Forms;
 using WebKit;
+using System.Runtime.InteropServices;
 
 namespace WebKitBrowserTest
 {
@@ -38,22 +39,42 @@ namespace WebKitBrowserTest
         {
             MessageBox.Show("Hey!");
         }
+
+
+        public string foo(string bar)
+        {
+            return "foo" + bar;
+        }
+
+        int _myProperty;
+        public int propName
+        {
+            get
+            {
+                return _myProperty;
+            }
+            set
+            {
+                _myProperty = value;
+            }
+        }
     }
 
     public partial class WebBrowserTabPage : TabPage
     {
         public WebKitBrowser browser;
-        
+
         private StatusStrip statusStrip;
         private ToolStripLabel statusLabel;
         private ToolStripLabel iconLabel;
         private ToolStripProgressBar progressBar;
         private ToolStripContainer container;
-        
-        public WebBrowserTabPage() : this(new WebKitBrowser(), true)
+
+        public WebBrowserTabPage()
+            : this(new WebKitBrowser(), true)
         {
         }
-        
+
         public WebBrowserTabPage(WebKitBrowser browserControl, bool goHome)
         {
             InitializeComponent();

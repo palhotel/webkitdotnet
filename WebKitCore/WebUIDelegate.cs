@@ -128,7 +128,7 @@ namespace WebKit
 
         public WebDragSourceAction dragSourceActionMaskForPoint(WebView WebView, ref tagPOINT point)
         {
-            throw new NotImplementedException();
+            return WebDragSourceAction.WebDragSourceActionNone;
         }
 
         public void drawCustomMenuItem(WebView sender, IntPtr drawItem)
