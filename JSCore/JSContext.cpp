@@ -11,12 +11,6 @@ JSContext::JSContext()
     _contextCreated = true;
 }
 
-JSContext::JSContext()
-{
-    _context = JSGlobalContextCreate(NULL);
-    _contextCreated = true;
-}
-
 JSContext::JSContext(JSContextRef context)
 : _context(context)
 {

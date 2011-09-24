@@ -24,30 +24,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
 */
 
-using System;                           /* {@@} */
-using System.ComponentModel;            /* {@@} */
-using System.Runtime.InteropServices;   /* {@@} */
-using System.Windows.Forms;
-using WebKit;
-using WebKit.JSCore;
-using WebKit.Interop;
-using System;
-using System.ComponentModel;
-using System.Threading;
-using System.IO;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-
 namespace WebKitBrowserTest
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.IO;
+    using System.Reflection;
+    using System.Runtime.InteropServices;
+    using System.Threading;
+    using System.Windows.Forms;
+
+    using WebKit;
+    using WebKit.JSCore;
+
     public class TestScriptObject
     {
         public void f()
         {
             MessageBox.Show("Hey!");
         }    
-
 
         public string foo(string bar)
         {

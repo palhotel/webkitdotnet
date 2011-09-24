@@ -299,9 +299,7 @@ window.onload = function() {
    
             //ctx.GarbageCollect();
         }
-
-       
-
+        
         private void setPasswordToolStripMenuItem_Click(object sender, EventArgs e)
         {
             PasswordDialog passDG = new PasswordDialog();
@@ -313,7 +311,19 @@ window.onload = function() {
         }
 
         /* {@@} */
+        private void currentPage_WindowClosing(object sender, EventArgs e)
         {
+            WebBrowserTabPage tab = (WebBrowserTabPage)sender;
+            if (tab == currentPage)
+                closeTabToolStripMenuItem_Click(sender, e);
+        }
+        /* {@@} */
+
+        private void objectForScriptingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            currentPage.browser.DocumentText = @"<!DOCTYPE html>
+<html>
+<head>
 <script>
 alert('typeof external.propName='  + typeof external.propName);
 alert('result of getting external.propName='  + external.propName);
@@ -330,6 +340,5 @@ alert('exception when calling external.foo(\'bar\'):' + e.message);
 </html>
 ";
         }
-        /* {@@} */
     }
 }
