@@ -23,6 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * @constructor
+ * @extends {WebInspector.View}
+ */
 WebInspector.DatabaseTableView = function(database, tableName)
 {
     WebInspector.View.call(this);
@@ -46,7 +50,7 @@ WebInspector.DatabaseTableView.prototype = {
 
     get statusBarItems()
     {
-        return [this.refreshButton];
+        return [this.refreshButton.element];
     },
 
     update: function()
@@ -54,16 +58,14 @@ WebInspector.DatabaseTableView.prototype = {
         this.database.executeSql("SELECT * FROM " + this.tableName, this._queryFinished.bind(this), this._queryError.bind(this));
     },
 
-    _queryFinished: function(result)
+    _queryFinished: function(columnNames, values)
     {
         this.element.removeChildren();
 
-        var dataGrid = WebInspector.panels.storage.dataGridForResult(result);
+        var dataGrid = WebInspector.DataGrid.createSortableDataGrid(columnNames, values);
         if (!dataGrid) {
-            var emptyMsgElement = document.createElement("div");
-            emptyMsgElement.className = "storage-table-empty";
-            emptyMsgElement.textContent = WebInspector.UIString("The “%s”\ntable is empty.", this.tableName);
-            this.element.appendChild(emptyMsgElement);
+            this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("The “%s”\ntable is empty.", this.tableName));
+            this._emptyView.show(this.element);
             return;
         }
 

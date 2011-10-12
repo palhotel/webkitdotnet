@@ -1048,12 +1048,14 @@ namespace WebKit
         public void ShowPrintPreviewDialog()
         {
             // TODO: find out why it apparently only shows the first page on the preview...
-            PrintPreviewDialog printDlg = new PrintPreviewDialog();
-            PrintDocument doc = this.GetCommonPrintDocument();
-            printDlg.Document = doc;
-            PrintManager pm = new PrintManager(doc, this.host, this, true);
-            pm.Print();
-            printDlg.ShowDialog();
+        	using (PrintPreviewDialog printDlg = new PrintPreviewDialog())
+        	{
+        		PrintDocument doc = GetCommonPrintDocument();
+        		printDlg.Document = doc;
+        		PrintManager pm = new PrintManager(doc, this.host, this, true);
+        		pm.Print();
+        		printDlg.ShowDialog();
+        	}
         }
 
         // Gets a PrintDocument with the current default settings.

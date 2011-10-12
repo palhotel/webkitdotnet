@@ -27,12 +27,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * @constructor
+ * @extends {WebInspector.Section}
+ * @param {string=} subtitle
+ */
 WebInspector.PropertiesSection = function(title, subtitle)
 {
     WebInspector.Section.call(this, title, subtitle);
 
+    this.headerElement.addStyleClass("monospace");
     this.propertiesElement = document.createElement("ol");
-    this.propertiesElement.className = "properties source-code";
+    this.propertiesElement.className = "properties properties-tree monospace";
     this.propertiesElement.tabIndex = 0;
     this.propertiesTreeOutline = new TreeOutline(this.propertiesElement);
     this.propertiesTreeOutline.section = this;

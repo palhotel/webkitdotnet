@@ -50,7 +50,7 @@ WebInspector.ProfileDataGridNode.prototype = {
     {
         function formatMilliseconds(time)
         {
-            return Number.secondsToString(time / 1000, WebInspector.UIString, !Preferences.samplingCPUProfiler);
+            return Number.secondsToString(time / 1000, !Preferences.samplingCPUProfiler);
         }
 
         var data = {};
@@ -96,19 +96,10 @@ WebInspector.ProfileDataGridNode.prototype = {
             cell.addStyleClass("highlight");
 
         if (this.profileNode.url) {
-            var fileName = WebInspector.displayNameForURL(this.profileNode.url);
-
-            var urlElement = document.createElement("a");
-            urlElement.className = "profile-node-file webkit-html-resource-link";
-            urlElement.href = this.profileNode.url;
-            urlElement.lineNumber = this.profileNode.lineNumber;
-            urlElement.preferredPanel = "scripts";
-
-            if (this.profileNode.lineNumber > 0)
-                urlElement.textContent = fileName + ":" + this.profileNode.lineNumber;
-            else
-                urlElement.textContent = fileName;
-
+            // FIXME(62725): profileNode should reference a debugger location.
+            var lineNumber = this.profileNode.lineNumber ? this.profileNode.lineNumber - 1 : 0;
+            var urlElement = this.profileView._linkifier.linkifyLocation(this.profileNode.url, lineNumber, 0, "profile-node-file");
+            urlElement.style.maxWidth = "75%";
             cell.insertBefore(urlElement, cell.firstChild);
         }
 

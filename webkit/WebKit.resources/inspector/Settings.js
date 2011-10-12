@@ -42,82 +42,120 @@ var Preferences = {
     showColorNicknames: true,
     debuggerAlwaysEnabled: false,
     profilerAlwaysEnabled: false,
-    auditsPanelEnabled: true,
-    appCacheEnabled: true
+    onlineDetectionEnabled: true,
+    nativeInstrumentationEnabled: false,
+    useDataURLForResourceImageIcons: true,
+    showTimingTab: false,
+    showCookiesTab: false,
+    debugMode: false,
+    heapProfilerPresent: false,
+    detailedHeapProfiles: false,
+    saveAsAvailable: false,
+    useLowerCaseMenuTitlesOnWindows: false,
+    canInspectWorkers: false,
+    canClearCacheAndCookies: false,
+    canDisableCache: false,
+    showNetworkPanelInitiatorColumn: false,
+    haveExtensions: false
 }
 
-WebInspector.populateApplicationSettings = function(settingsString)
+/**
+ * @constructor
+ */
+WebInspector.Settings = function()
 {
-    WebInspector.applicationSettings._load(settingsString);
-    WebInspector.applicationSettings.installSetting("eventListenersFilter", "event-listeners-filter", "all");
-    WebInspector.applicationSettings.installSetting("colorFormat", "color-format", "hex");
-    WebInspector.applicationSettings.installSetting("resourcesLargeRows", "resources-large-rows", true);
-    WebInspector.applicationSettings.installSetting("watchExpressions", "watch-expressions", []);
-    WebInspector.applicationSettings.installSetting("lastViewedScriptFile", "last-viewed-script-file");
-    WebInspector.applicationSettings.installSetting("showInheritedComputedStyleProperties", "show-inherited-computed-style-properties", false);
-    WebInspector.applicationSettings.installSetting("showUserAgentStyles", "show-user-agent-styles", true);
-    WebInspector.applicationSettings.installSetting("resourceViewTab", "resource-view-tab", "content");
-    WebInspector.applicationSettings.installSetting("consoleHistory", "console-history", []);
+    this._eventSupport = new WebInspector.Object();
 
-    WebInspector.applicationSettings.dispatchEventToListeners("loaded");
-}
+    this.colorFormat = this.createSetting("colorFormat", "hex");
+    this.consoleHistory = this.createSetting("consoleHistory", []);
+    this.debuggerEnabled = this.createSetting("debuggerEnabled", false);
+    this.domWordWrap = this.createSetting("domWordWrap", true);
+    this.profilerEnabled = this.createSetting("profilerEnabled", false);
+    this.eventListenersFilter = this.createSetting("eventListenersFilter", "all");
+    this.lastActivePanel = this.createSetting("lastActivePanel", "elements");
+    this.lastViewedScriptFile = this.createSetting("lastViewedScriptFile", "application");
+    this.monitoringXHREnabled = this.createSetting("monitoringXHREnabled", false);
+    this.preserveConsoleLog = this.createSetting("preserveConsoleLog", false);
+    this.resourcesLargeRows = this.createSetting("resourcesLargeRows", true);
+    this.resourcesSortOptions = this.createSetting("resourcesSortOptions", {timeOption: "responseTime", sizeOption: "transferSize"});
+    this.resourceViewTab = this.createSetting("resourceViewTab", "preview");
+    this.showInheritedComputedStyleProperties = this.createSetting("showInheritedComputedStyleProperties", false);
+    this.showUserAgentStyles = this.createSetting("showUserAgentStyles", true);
+    this.watchExpressions = this.createSetting("watchExpressions", []);
+    this.breakpoints = this.createSetting("breakpoints", []);
+    this.eventListenerBreakpoints = this.createSetting("eventListenerBreakpoints", []);
+    this.domBreakpoints = this.createSetting("domBreakpoints", []);
+    this.xhrBreakpoints = this.createSetting("xhrBreakpoints", []);
+    this.workerInspectionEnabled = this.createSetting("workerInspectionEnabled", []);
+    this.cacheDisabled = this.createSetting("cacheDisabled", false);
+    this.showScriptFolders = this.createSetting("showScriptFolders", true);
 
-WebInspector.populateSessionSettings = function(settingsString)
-{
-    WebInspector.sessionSettings._load(settingsString);
-    WebInspector.sessionSettings.dispatchEventToListeners("loaded");
-}
-
-WebInspector.Settings = function(sessionScope)
-{
-    this._sessionScope = sessionScope;
-    this._defaultValues = {};
+    // If there are too many breakpoints in a storage, it is likely due to a recent bug that caused
+    // periodical breakpoints duplication leading to inspector slowness.
+    if (window.localStorage.breakpoints && window.localStorage.breakpoints.length > 500000)
+        delete window.localStorage.breakpoints;
 }
 
 WebInspector.Settings.prototype = {
-    reset: function()
+    /**
+     * @return {WebInspector.Setting}
+     */
+    createSetting: function(key, defaultValue)
     {
-        this._store = {};
-        this.dispatchEventToListeners("loaded");
-    },
-
-    _load: function(settingsString)
-    {
-        try {
-            this._store = JSON.parse(settingsString);
-        } catch (e) {
-            // May fail;
-            this._store = {};
-        }
-    },
-
-    installSetting: function(name, propertyName, defaultValue)
-    {
-        this.__defineGetter__(name, this._get.bind(this, propertyName));
-        this.__defineSetter__(name, this._set.bind(this, propertyName));
-        this._defaultValues[propertyName] = defaultValue;
-    },
-
-    _get: function(propertyName)
-    {
-        if (propertyName in this._store)
-            return this._store[propertyName];
-        return this._defaultValues[propertyName];
-    },
-
-    _set: function(propertyName, newValue)
-    {
-        this._store[propertyName] = newValue;
-        try {
-            var store = JSON.stringify(this._store);
-            if (this._sessionScope)
-                InspectorBackend.saveSessionSettings(store);
-            else
-                InspectorBackend.saveApplicationSettings(store);
-        } catch (e) {
-            // May fail;
-        }
+        return new WebInspector.Setting(key, defaultValue, this._eventSupport);
     }
 }
 
-WebInspector.Settings.prototype.__proto__ = WebInspector.Object.prototype;
+/**
+ * @constructor
+ */
+WebInspector.Setting = function(name, defaultValue, eventSupport)
+{
+    this._name = name;
+    this._defaultValue = defaultValue;
+    this._eventSupport = eventSupport;
+}
+
+WebInspector.Setting.prototype = {
+    addChangeListener: function(listener, thisObject)
+    {
+        this._eventSupport.addEventListener(this._name, listener, thisObject);
+    },
+
+    removeChangeListener: function(listener, thisObject)
+    {
+        this._eventSupport.removeEventListener(this._name, listener, thisObject);
+    },
+
+    get name()
+    {
+        return this._name;
+    },
+
+    get: function()
+    {
+        var value = this._defaultValue;
+        if (window.localStorage != null && this._name in window.localStorage) {
+            try {
+                value = JSON.parse(window.localStorage[this._name]);
+            } catch(e) {
+                window.localStorage.removeItem(this._name);
+            }
+        }
+        return value;
+    },
+
+    set: function(value)
+    {
+        if (window.localStorage != null) {
+            try {
+                window.localStorage[this._name] = JSON.stringify(value);
+            } catch(e) {
+                console.error("Error saving setting with name:" + this._name);
+            }
+        }
+        this._eventSupport.dispatchEventToListeners(this._name, value);
+    }
+}
+
+WebInspector.settings = new WebInspector.Settings();
