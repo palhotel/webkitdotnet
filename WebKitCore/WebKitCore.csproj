@@ -69,10 +69,9 @@
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="WebKit.Interop, Version=534.0.0.0, Culture=neutral, PublicKeyToken=b967213f6d29a3be, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="WebKit.Interop">
+      <HintPath>..\webkit\bin\WebKit.Interop.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\webkit\WebKit.Interop.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -117,9 +116,13 @@
   -->
   <PropertyGroup>
     <PostBuildEvent>echo WebKitBrowser &gt; temp_exclude_files.txt
+
 echo .tlb &gt;&gt; temp_exclude_files.txt
+
 echo gitignore &gt;&gt; temp_exclude_files.txt
-xcopy /E /Y /EXCLUDE:temp_exclude_files.txt "$(SolutionDir)webkit\*" "$(SolutionDir)bin\$(ConfigurationName)"
+
+xcopy /E /Y /EXCLUDE:temp_exclude_files.txt "$(SolutionDir)webkit\bin\*" "$(SolutionDir)bin\$(ConfigurationName)"
+
 del temp_exclude_files.txt</PostBuildEvent>
     <PreBuildEvent>
     </PreBuildEvent>

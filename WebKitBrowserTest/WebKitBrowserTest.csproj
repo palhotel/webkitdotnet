@@ -100,18 +100,13 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="JSCore, Version=1.0.4092.42699, Culture=neutral, PublicKeyToken=b967213f6d29a3be, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\bin\Debug\JSCore.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="WebKit.Interop, Version=534.0.0.0, Culture=neutral, PublicKeyToken=b967213f6d29a3be, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="WebKit.Interop">
+      <HintPath>..\webkit\bin\WebKit.Interop.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\webkit\WebKit.Interop.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -217,6 +212,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JSCore\JSCore.vcxproj">
+      <Project>{287EEE45-1390-44D5-982F-0B96D4A077DA}</Project>
+      <Name>JSCore</Name>
+    </ProjectReference>
     <ProjectReference Include="..\WebKitBrowser\WebKitBrowser.csproj">
       <Project>{44AFE214-12C7-4280-898D-A7C4AABF1533}</Project>
       <Name>WebKitBrowser</Name>
