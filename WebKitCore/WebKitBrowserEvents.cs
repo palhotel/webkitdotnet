@@ -1,26 +1,26 @@
 ﻿/*
  * Copyright (c) 2009, Peter Nelson (charn.opcode@gmail.com)
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
- * * Redistributions of source code must retain the above copyright notice, 
+ *
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- *   
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
 */
 
@@ -85,21 +85,21 @@ namespace WebKit
     public delegate void ProgressChangedEventHandler(object sender, ProgressChangedEventArgs e);
 
     /// <summary>
-    /// Represents the method that will handle the WebKitBrowser.ShowJavaScriptAlertPanel event. 
+    /// Represents the method that will handle the WebKitBrowser.ShowJavaScriptAlertPanel event.
     /// </summary>
     /// <param name="sender">The source of the event.</param>
     /// <param name="e">A ShowJavaScriptAlertPanelEventArgs that contains the event data.</param>
     public delegate void ShowJavaScriptAlertPanelEventHandler(object sender, ShowJavaScriptAlertPanelEventArgs e);
 
     /// <summary>
-    /// Represents the method that will handle the WebKitBrowser.ShowJavaScriptConfirmPanel event. 
+    /// Represents the method that will handle the WebKitBrowser.ShowJavaScriptConfirmPanel event.
     /// </summary>
     /// <param name="sender">The source of the event.</param>
     /// <param name="e">A ShowJavaScriptConfirmPanelEventArgs that contains the event data.</param>
     public delegate void ShowJavaScriptConfirmPanelEventHandler(object sender, ShowJavaScriptConfirmPanelEventArgs e);
 
     /// <summary>
-    /// Represents the method that will handle the WebKitBrowser.ShowJavaScriptPromptPanel event. 
+    /// Represents the method that will handle the WebKitBrowser.ShowJavaScriptPromptPanel event.
     /// </summary>
     /// <param name="sender">The source of the event.</param>
     /// <param name="e">A ShowJavaScriptPromptPanelEventArgs that contains the event data.</param>
@@ -156,7 +156,7 @@ namespace WebKit
     }
 
     /// <summary>
-    /// Provides data for the WebKitBrowser.NewWindowRequest event. 
+    /// Provides data for the WebKitBrowser.NewWindowRequest event.
     /// </summary>
     public class NewWindowRequestEventArgs : EventArgs
     {
@@ -230,7 +230,7 @@ namespace WebKit
         /// Gets the message to be shown in the confirm panel.
         /// </summary>
         public string Message { get; private set; }
-        
+
         /// <summary>
         /// Gets or sets the return value for the confirm panel.
         /// </summary>
@@ -256,7 +256,7 @@ namespace WebKit
         /// Gets the message to be shown in the prompt panel.
         /// </summary>
         public string Message { get; private set; }
-        
+
         /// <summary>
         /// Gets the default value of the prompt panel.
         /// </summary>
