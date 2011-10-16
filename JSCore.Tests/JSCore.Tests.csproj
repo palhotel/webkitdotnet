@@ -78,7 +78,7 @@
     </Reference>
     <Reference Include="WebKit.Interop">
       <HintPath>..\webkit\bin\WebKit.Interop.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
   </ItemGroup>
   <ItemGroup>

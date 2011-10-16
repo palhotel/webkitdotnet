@@ -12,6 +12,8 @@ using WebKit.JSCore;
 
 namespace WebKit
 {
+    using System.Threading;
+
     public class WebKitBrowserCore : IWebKitBrowser
     {
         // static variables
@@ -52,7 +54,7 @@ namespace WebKit
 
         // public events, roughly the same as in WebBrowser class
         // using the null object pattern to avoid null tests
-        
+
         /// <summary>
         /// Occurs when the DocumentTitle property value changes.
         /// </summary>
@@ -122,7 +124,7 @@ namespace WebKit
         /// Occurs when JavaScript requests a prompt panel to be displayed via the prompt() function.
         /// </summary>
         public event ShowJavaScriptPromptPanelEventHandler ShowJavaScriptPromptPanel = delegate { };
-        
+
         #endregion
 
         #region Public properties
@@ -157,7 +159,7 @@ namespace WebKit
                 if (loaded)
                 {
                     Uri result;
-                    return Uri.TryCreate(webView.mainFrame().dataSource().request().url(), 
+                    return Uri.TryCreate(webView.mainFrame().dataSource().request().url(),
                         UriKind.Absolute, out result) ? result : null;
                 }
                 else
@@ -297,10 +299,10 @@ namespace WebKit
         }
 
         /// <summary>
-        /// Gets or sets whether the control can navigate to another page 
+        /// Gets or sets whether the control can navigate to another page
         /// once it's initial page has loaded.
         /// </summary>
-        public bool AllowNavigation 
+        public bool AllowNavigation
         {
             get
             {
@@ -515,10 +517,10 @@ namespace WebKit
         public object ObjectForScripting
         {
             get { return _scriptObject; }
-            set 
-            { 
+            set
+            {
                 _scriptObject = value;
-                CreateWindowScriptObject((JSContext)GetGlobalScriptContext()); 
+                CreateWindowScriptObject((JSContext)GetGlobalScriptContext());
             }
         }
 
@@ -550,24 +552,32 @@ namespace WebKit
         /// <param name="host">The host.</param>
         public void Initialize(IWebKitBrowserHost host)
         {
-            if(host == null)
+            if (host == null)
+            {
                 throw new ArgumentNullException("host");
+            }
 
             this.host = host;
 
-            if(!host.InDesignMode)
+            if (!host.InDesignMode)
             {
-                // Control Events            
-                this.host.Load += new EventHandler(WebKitBrowser_Load);
-                this.host.Resize += new EventHandler(WebKitBrowser_Resize);
+                // Control Events
+                this.host.Load += WebKitBrowser_Load;
+                this.host.Resize += WebKitBrowser_Resize;
 
                 // If this is the first time the library has been loaded,
                 // initialize the activation context required to load the
-                // WebKit COM component registration free
-                if((actCtxRefCount++) == 0)
+                // WebKit COM component registration free.
+                if (Interlocked.Increment(ref actCtxRefCount) == 1)
                 {
                     FileInfo fi = new FileInfo(Assembly.GetExecutingAssembly().Location);
-                    activationContext = new ActivationContext(Path.Combine(fi.DirectoryName, "WebKitBrowser.dll.manifest"));
+                    string manifestPath = Path.Combine(fi.DirectoryName, "WebKitBrowser.dll.manifest");
+                    if (string.IsNullOrEmpty(manifestPath))
+                    {
+                        throw new ApplicationException("Failed to locate 'WebKitBrowser.dll.manifest' file.");
+                    }
+
+                    activationContext = new ActivationContext(manifestPath);
                     activationContext.Initialize();
 
                     // TODO: more error handling here
@@ -577,11 +587,8 @@ namespace WebKit
                     Application.OleRequired();
                 }
 
-                // If this control is brought to focus, focus our webkit child window
-                this.host.GotFocus += (s, e) =>
-                {
-                    NativeMethods.SetFocus(webViewHWND);
-                };
+                // If this control is brought to focus, focus our webkit child window.
+                this.host.GotFocus += (s, e) => NativeMethods.SetFocus(webViewHWND);
 
                 activationContext.Activate();
                 webView = new WebViewClass();
@@ -685,7 +692,7 @@ namespace WebKit
                 policyDelegate.AllowInitialNavigation = false;
             }
             if (_scriptObject !=null)
-                CreateWindowScriptObject((JSContext)GetGlobalScriptContext()); 
+                CreateWindowScriptObject((JSContext)GetGlobalScriptContext());
             IsScriptingEnabled = initialJavaScriptEnabled;
         }
 
@@ -698,7 +705,7 @@ namespace WebKit
 
         #endregion
 
-        #region WebFrameLoadDelegate event handlers 
+        #region WebFrameLoadDelegate event handlers
 
         private void frameLoadDelegate_DidCommitLoadForFrame(WebView WebView, IWebFrame frame)
         {
@@ -750,7 +757,7 @@ namespace WebKit
 
         private void frameLoadDelegate_DidFailLoadWithError(WebView WebView, IWebError error, IWebFrame frame)
         {
-            Error(this, new WebKitBrowserErrorEventArgs(error.localizedDescription())); 
+            Error(this, new WebKitBrowserErrorEventArgs(error.localizedDescription()));
         }
 
         private void frameLoadDelegate_DidClearWindowObject(WebView WebView, IntPtr context, IntPtr windowScriptObject, IWebFrame frame)
@@ -954,7 +961,7 @@ namespace WebKit
         }
 
         /// <summary>
-        /// Stops loading the current web page and any resources associated 
+        /// Stops loading the current web page and any resources associated
         /// with it.
         /// </summary>
         public void Stop()
@@ -1007,7 +1014,7 @@ namespace WebKit
             if (webView != null)
             {
                 IWebViewPrivate v = (IWebViewPrivate)webView;
-                v.inspector().attach();                
+                v.inspector().attach();
                 v.inspector().show();
             }
         }
@@ -1062,14 +1069,14 @@ namespace WebKit
         public void ShowPrintPreviewDialog()
         {
             // TODO: find out why it apparently only shows the first page on the preview...
-        	using (PrintPreviewDialog printDlg = new PrintPreviewDialog())
-        	{
-        		PrintDocument doc = GetCommonPrintDocument();
-        		printDlg.Document = doc;
-        		PrintManager pm = new PrintManager(doc, this.host, this, true);
-        		pm.Print();
-        		printDlg.ShowDialog();
-        	}
+            using (PrintPreviewDialog printDlg = new PrintPreviewDialog())
+            {
+                PrintDocument doc = GetCommonPrintDocument();
+                printDlg.Document = doc;
+                PrintManager pm = new PrintManager(doc, this.host, this, true);
+                pm.Print();
+                printDlg.ShowDialog();
+            }
         }
 
         // Gets a PrintDocument with the current default settings.
@@ -1086,15 +1093,16 @@ namespace WebKit
 
         public void Dispose(bool disposing)
         {
-            if(disposed)
-                return;
-            
-            if((--actCtxRefCount) == 0 && activationContext != null)
+            if (disposed)
             {
-                activationContext.Dispose();
+                return;
             }
 
-            disposed = true;
+            if (Interlocked.Decrement(ref actCtxRefCount) == 0 && activationContext != null)
+            {
+                activationContext.Dispose();
+                disposed = true;
+            }
         }
 
         private void CreateWindowScriptObject(JSContext context)
@@ -1103,10 +1111,18 @@ namespace WebKit
             {
                 JSObject global = context.GetGlobalObject();
                 JSValue window = global.GetProperty("window");
-                if (window == null || !window.IsObject) return;
+                if (window == null || !window.IsObject)
+                {
+                    return;
+                }
+
                 JSObject windowObj = window.ToObject();
-                if (windowObj == null) return;
-                windowObj.SetProperty("external", (object)ObjectForScripting);
+                if (windowObj == null)
+                {
+                    return;
+                }
+
+                windowObj.SetProperty("external", ObjectForScripting);
             }
         }
 
