@@ -3,18 +3,18 @@
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
 
 
- /* File created by MIDL compiler version 6.00.0366 */
-/* at Tue Oct 11 09:52:35 2011
+ /* File created by MIDL compiler version 7.00.0555 */
+/* at Fri Mar 02 08:09:01 2012
  */
 /* Compiler settings for ..\Interfaces\IWebDesktopNotificationsDelegate.idl:
-    Oicf, W1, Zp8, env=Win32 (32b run)
+    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
          DECLSPEC_UUID(), MIDL_INTERFACE()
 */
-//@@MIDL_FILE_HEADING(  )
+/* @@MIDL_FILE_HEADING(  ) */
 
 #pragma warning( disable: 4049 )  /* more than 64k source lines */
 
@@ -65,8 +65,6 @@ typedef interface IWebDesktopNotificationsDelegate IWebDesktopNotificationsDeleg
 extern "C"{
 #endif 
 
-void * __RPC_USER MIDL_user_allocate(size_t);
-void __RPC_USER MIDL_user_free( void * ); 
 
 #ifndef __IWebDesktopNotification_INTERFACE_DEFINED__
 #define __IWebDesktopNotification_INTERFACE_DEFINED__
@@ -116,7 +114,8 @@ EXTERN_C const IID IID_IWebDesktopNotification;
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             IWebDesktopNotification * This,
             /* [in] */ REFIID riid,
-            /* [iid_is][out] */ void **ppvObject);
+            /* [annotation][iid_is][out] */ 
+            __RPC__deref_out  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IWebDesktopNotification * This);
@@ -168,138 +167,44 @@ EXTERN_C const IID IID_IWebDesktopNotification;
 
 
 #define IWebDesktopNotification_QueryInterface(This,riid,ppvObject)	\
-    (This)->lpVtbl -> QueryInterface(This,riid,ppvObject)
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
 
 #define IWebDesktopNotification_AddRef(This)	\
-    (This)->lpVtbl -> AddRef(This)
+    ( (This)->lpVtbl -> AddRef(This) ) 
 
 #define IWebDesktopNotification_Release(This)	\
-    (This)->lpVtbl -> Release(This)
+    ( (This)->lpVtbl -> Release(This) ) 
 
 
 #define IWebDesktopNotification_isHTML(This,result)	\
-    (This)->lpVtbl -> isHTML(This,result)
+    ( (This)->lpVtbl -> isHTML(This,result) ) 
 
 #define IWebDesktopNotification_contentsURL(This,result)	\
-    (This)->lpVtbl -> contentsURL(This,result)
+    ( (This)->lpVtbl -> contentsURL(This,result) ) 
 
 #define IWebDesktopNotification_iconURL(This,result)	\
-    (This)->lpVtbl -> iconURL(This,result)
+    ( (This)->lpVtbl -> iconURL(This,result) ) 
 
 #define IWebDesktopNotification_title(This,result)	\
-    (This)->lpVtbl -> title(This,result)
+    ( (This)->lpVtbl -> title(This,result) ) 
 
 #define IWebDesktopNotification_text(This,result)	\
-    (This)->lpVtbl -> text(This,result)
+    ( (This)->lpVtbl -> text(This,result) ) 
 
 #define IWebDesktopNotification_notifyDisplay(This)	\
-    (This)->lpVtbl -> notifyDisplay(This)
+    ( (This)->lpVtbl -> notifyDisplay(This) ) 
 
 #define IWebDesktopNotification_notifyError(This)	\
-    (This)->lpVtbl -> notifyError(This)
+    ( (This)->lpVtbl -> notifyError(This) ) 
 
 #define IWebDesktopNotification_notifyClose(This,xplicit)	\
-    (This)->lpVtbl -> notifyClose(This,xplicit)
+    ( (This)->lpVtbl -> notifyClose(This,xplicit) ) 
 
 #endif /* COBJMACROS */
 
 
 #endif 	/* C style interface */
 
-
-
-HRESULT STDMETHODCALLTYPE IWebDesktopNotification_isHTML_Proxy( 
-    IWebDesktopNotification * This,
-    /* [retval][out] */ BOOL *result);
-
-
-void __RPC_STUB IWebDesktopNotification_isHTML_Stub(
-    IRpcStubBuffer *This,
-    IRpcChannelBuffer *_pRpcChannelBuffer,
-    PRPC_MESSAGE _pRpcMessage,
-    DWORD *_pdwStubPhase);
-
-
-HRESULT STDMETHODCALLTYPE IWebDesktopNotification_contentsURL_Proxy( 
-    IWebDesktopNotification * This,
-    /* [retval][out] */ BSTR *result);
-
-
-void __RPC_STUB IWebDesktopNotification_contentsURL_Stub(
-    IRpcStubBuffer *This,
-    IRpcChannelBuffer *_pRpcChannelBuffer,
-    PRPC_MESSAGE _pRpcMessage,
-    DWORD *_pdwStubPhase);
-
-
-HRESULT STDMETHODCALLTYPE IWebDesktopNotification_iconURL_Proxy( 
-    IWebDesktopNotification * This,
-    /* [retval][out] */ BSTR *result);
-
-
-void __RPC_STUB IWebDesktopNotification_iconURL_Stub(
-    IRpcStubBuffer *This,
-    IRpcChannelBuffer *_pRpcChannelBuffer,
-    PRPC_MESSAGE _pRpcMessage,
-    DWORD *_pdwStubPhase);
-
-
-HRESULT STDMETHODCALLTYPE IWebDesktopNotification_title_Proxy( 
-    IWebDesktopNotification * This,
-    /* [retval][out] */ BSTR *result);
-
-
-void __RPC_STUB IWebDesktopNotification_title_Stub(
-    IRpcStubBuffer *This,
-    IRpcChannelBuffer *_pRpcChannelBuffer,
-    PRPC_MESSAGE _pRpcMessage,
-    DWORD *_pdwStubPhase);
-
-
-HRESULT STDMETHODCALLTYPE IWebDesktopNotification_text_Proxy( 
-    IWebDesktopNotification * This,
-    /* [retval][out] */ BSTR *result);
-
-
-void __RPC_STUB IWebDesktopNotification_text_Stub(
-    IRpcStubBuffer *This,
-    IRpcChannelBuffer *_pRpcChannelBuffer,
-    PRPC_MESSAGE _pRpcMessage,
-    DWORD *_pdwStubPhase);
-
-
-HRESULT STDMETHODCALLTYPE IWebDesktopNotification_notifyDisplay_Proxy( 
-    IWebDesktopNotification * This);
-
-
-void __RPC_STUB IWebDesktopNotification_notifyDisplay_Stub(
-    IRpcStubBuffer *This,
-    IRpcChannelBuffer *_pRpcChannelBuffer,
-    PRPC_MESSAGE _pRpcMessage,
-    DWORD *_pdwStubPhase);
-
-
-HRESULT STDMETHODCALLTYPE IWebDesktopNotification_notifyError_Proxy( 
-    IWebDesktopNotification * This);
-
-
-void __RPC_STUB IWebDesktopNotification_notifyError_Stub(
-    IRpcStubBuffer *This,
-    IRpcChannelBuffer *_pRpcChannelBuffer,
-    PRPC_MESSAGE _pRpcMessage,
-    DWORD *_pdwStubPhase);
-
-
-HRESULT STDMETHODCALLTYPE IWebDesktopNotification_notifyClose_Proxy( 
-    IWebDesktopNotification * This,
-    /* [in] */ BOOL xplicit);
-
-
-void __RPC_STUB IWebDesktopNotification_notifyClose_Stub(
-    IRpcStubBuffer *This,
-    IRpcChannelBuffer *_pRpcChannelBuffer,
-    PRPC_MESSAGE _pRpcMessage,
-    DWORD *_pdwStubPhase);
 
 
 
@@ -348,7 +253,8 @@ EXTERN_C const IID IID_IWebDesktopNotificationsDelegate;
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             IWebDesktopNotificationsDelegate * This,
             /* [in] */ REFIID riid,
-            /* [iid_is][out] */ void **ppvObject);
+            /* [annotation][iid_is][out] */ 
+            __RPC__deref_out  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IWebDesktopNotificationsDelegate * This);
@@ -391,96 +297,35 @@ EXTERN_C const IID IID_IWebDesktopNotificationsDelegate;
 
 
 #define IWebDesktopNotificationsDelegate_QueryInterface(This,riid,ppvObject)	\
-    (This)->lpVtbl -> QueryInterface(This,riid,ppvObject)
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
 
 #define IWebDesktopNotificationsDelegate_AddRef(This)	\
-    (This)->lpVtbl -> AddRef(This)
+    ( (This)->lpVtbl -> AddRef(This) ) 
 
 #define IWebDesktopNotificationsDelegate_Release(This)	\
-    (This)->lpVtbl -> Release(This)
+    ( (This)->lpVtbl -> Release(This) ) 
 
 
 #define IWebDesktopNotificationsDelegate_showDesktopNotification(This,notification)	\
-    (This)->lpVtbl -> showDesktopNotification(This,notification)
+    ( (This)->lpVtbl -> showDesktopNotification(This,notification) ) 
 
 #define IWebDesktopNotificationsDelegate_cancelDesktopNotification(This,notification)	\
-    (This)->lpVtbl -> cancelDesktopNotification(This,notification)
+    ( (This)->lpVtbl -> cancelDesktopNotification(This,notification) ) 
 
 #define IWebDesktopNotificationsDelegate_notificationDestroyed(This,notification)	\
-    (This)->lpVtbl -> notificationDestroyed(This,notification)
+    ( (This)->lpVtbl -> notificationDestroyed(This,notification) ) 
 
 #define IWebDesktopNotificationsDelegate_checkNotificationPermission(This,origin,result)	\
-    (This)->lpVtbl -> checkNotificationPermission(This,origin,result)
+    ( (This)->lpVtbl -> checkNotificationPermission(This,origin,result) ) 
 
 #define IWebDesktopNotificationsDelegate_requestNotificationPermission(This,origin)	\
-    (This)->lpVtbl -> requestNotificationPermission(This,origin)
+    ( (This)->lpVtbl -> requestNotificationPermission(This,origin) ) 
 
 #endif /* COBJMACROS */
 
 
 #endif 	/* C style interface */
 
-
-
-HRESULT STDMETHODCALLTYPE IWebDesktopNotificationsDelegate_showDesktopNotification_Proxy( 
-    IWebDesktopNotificationsDelegate * This,
-    /* [in] */ IWebDesktopNotification *notification);
-
-
-void __RPC_STUB IWebDesktopNotificationsDelegate_showDesktopNotification_Stub(
-    IRpcStubBuffer *This,
-    IRpcChannelBuffer *_pRpcChannelBuffer,
-    PRPC_MESSAGE _pRpcMessage,
-    DWORD *_pdwStubPhase);
-
-
-HRESULT STDMETHODCALLTYPE IWebDesktopNotificationsDelegate_cancelDesktopNotification_Proxy( 
-    IWebDesktopNotificationsDelegate * This,
-    /* [in] */ IWebDesktopNotification *notification);
-
-
-void __RPC_STUB IWebDesktopNotificationsDelegate_cancelDesktopNotification_Stub(
-    IRpcStubBuffer *This,
-    IRpcChannelBuffer *_pRpcChannelBuffer,
-    PRPC_MESSAGE _pRpcMessage,
-    DWORD *_pdwStubPhase);
-
-
-HRESULT STDMETHODCALLTYPE IWebDesktopNotificationsDelegate_notificationDestroyed_Proxy( 
-    IWebDesktopNotificationsDelegate * This,
-    /* [in] */ IWebDesktopNotification *notification);
-
-
-void __RPC_STUB IWebDesktopNotificationsDelegate_notificationDestroyed_Stub(
-    IRpcStubBuffer *This,
-    IRpcChannelBuffer *_pRpcChannelBuffer,
-    PRPC_MESSAGE _pRpcMessage,
-    DWORD *_pdwStubPhase);
-
-
-HRESULT STDMETHODCALLTYPE IWebDesktopNotificationsDelegate_checkNotificationPermission_Proxy( 
-    IWebDesktopNotificationsDelegate * This,
-    /* [in] */ BSTR origin,
-    /* [retval][out] */ int *result);
-
-
-void __RPC_STUB IWebDesktopNotificationsDelegate_checkNotificationPermission_Stub(
-    IRpcStubBuffer *This,
-    IRpcChannelBuffer *_pRpcChannelBuffer,
-    PRPC_MESSAGE _pRpcMessage,
-    DWORD *_pdwStubPhase);
-
-
-HRESULT STDMETHODCALLTYPE IWebDesktopNotificationsDelegate_requestNotificationPermission_Proxy( 
-    IWebDesktopNotificationsDelegate * This,
-    /* [in] */ BSTR origin);
-
-
-void __RPC_STUB IWebDesktopNotificationsDelegate_requestNotificationPermission_Stub(
-    IRpcStubBuffer *This,
-    IRpcChannelBuffer *_pRpcChannelBuffer,
-    PRPC_MESSAGE _pRpcMessage,
-    DWORD *_pdwStubPhase);
 
 
 
