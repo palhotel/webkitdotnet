@@ -13,19 +13,20 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ECF98425-04BB-4601-A527-1325B32129FE}</ProjectGuid>
     <Keyword>MakeFileProj</Keyword>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Makefile</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <OutDir>$(SolutionDir)bin\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)bin\net4.0\</OutDir>
+    <IntDir>$(SolutionDir)obj\net4.0\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Makefile</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <OutDir>$(SolutionDir)bin\</OutDir>
-    <IntDir>$(SolutionDir)obj\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)bin\net4.0\</OutDir>
+    <IntDir>$(SolutionDir)obj\net4.0\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -56,7 +57,7 @@ IF "%NEWEST%"=="%FILE1%" GOTO:build_interop
 GOTO:end
 
 :build_interop
-ECHO Fixing WebKit.Interop...
+ECHO Generating WebKit.Interop...
 tlbimp "..\webkit\lib\webkit.tlb" /silent /keyfile:"%SlnDir%WebKit.NET.snk" /namespace:WebKit.Interop /out:"%OutDir%WebKit.Interop.dll"
 
 :end</NMakeBuildCommandLine>
@@ -64,6 +65,7 @@ tlbimp "..\webkit\lib\webkit.tlb" /silent /keyfile:"%SlnDir%WebKit.NET.snk" /nam
 SET IntDir=$(IntDir)
 SET SlnDir=$(SolutionDir)
 
+ECHO Generating WebKit.Interop...
 tlbimp "..\webkit\lib\webkit.tlb" /silent /keyfile:"%SlnDir%WebKit.NET.snk" /namespace:WebKit.Interop /out:"%OutDir%WebKit.Interop.dll"
 </NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>SET OutDir=$(OutDir)
@@ -94,7 +96,7 @@ IF "%NEWEST%"=="%FILE1%" GOTO:build_interop
 GOTO:end
 
 :build_interop
-ECHO Fixing WebKit.Interop...
+ECHO Generating WebKit.Interop...
 tlbimp "..\webkit\lib\webkit.tlb" /silent /keyfile:"%SlnDir%WebKit.NET.snk" /namespace:WebKit.Interop /out:"%OutDir%WebKit.Interop.dll"
 
 :end</NMakeBuildCommandLine>
@@ -102,6 +104,7 @@ tlbimp "..\webkit\lib\webkit.tlb" /silent /keyfile:"%SlnDir%WebKit.NET.snk" /nam
 SET IntDir=$(IntDir)
 SET SlnDir=$(SolutionDir)
 
+ECHO Generating WebKit.Interop...
 tlbimp "..\webkit\lib\webkit.tlb" /silent /keyfile:"%SlnDir%WebKit.NET.snk" /namespace:WebKit.Interop /out:"%OutDir%WebKit.Interop.dll"
 </NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>SET OutDir=$(OutDir)
