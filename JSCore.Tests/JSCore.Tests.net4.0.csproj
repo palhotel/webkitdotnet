@@ -86,7 +86,17 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)webkit\*.dll" "$(TargetDir)" /S /Y</PostBuildEvent>
+    <PostBuildEvent>echo WebKitBrowser &gt; temp_exclude_files.txt
+
+
+echo .tlb &gt;&gt; temp_exclude_files.txt
+
+
+echo gitignore &gt;&gt; temp_exclude_files.txt
+
+
+xcopy /E /Y /EXCLUDE:temp_exclude_files.txt "$(SolutionDir)webkit\bin\*" "$(TargetDir)"
+del temp_exclude_files.txt</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

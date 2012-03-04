@@ -103,12 +103,14 @@
   <PropertyGroup>
     <PostBuildEvent>echo WebKitBrowser &gt; temp_exclude_files.txt
 
+
 echo .tlb &gt;&gt; temp_exclude_files.txt
+
 
 echo gitignore &gt;&gt; temp_exclude_files.txt
 
-xcopy /E /Y /EXCLUDE:temp_exclude_files.txt "$(SolutionDir)webkit\bin\*" "$(SolutionDir)bin\$(ConfigurationName)"
 
+xcopy /E /Y /EXCLUDE:temp_exclude_files.txt "$(SolutionDir)webkit\bin\*" "$(TargetDir)"
 del temp_exclude_files.txt</PostBuildEvent>
     <PreBuildEvent>
     </PreBuildEvent>
