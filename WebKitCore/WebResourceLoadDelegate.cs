@@ -28,9 +28,6 @@
 // http://developer.apple.com/documentation/Cocoa/Reference/WebKit/Protocols/WebResourceLoadDelegate_Protocol
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using WebKit;
 using WebKit.Interop;
 
 namespace WebKit
@@ -39,47 +36,57 @@ namespace WebKit
     {
         #region IWebResourceLoadDelegate Members
 
-        public void didCancelAuthenticationChallenge(WebView WebView, uint identifier, IWebURLAuthenticationChallenge challenge, IWebDataSource dataSource)
+        public void didCancelAuthenticationChallenge(WebView webView, uint identifier, IWebURLAuthenticationChallenge challenge, IWebDataSource dataSource)
         {
             throw new NotImplementedException();
         }
 
-        public void didFailLoadingWithError(WebView WebView, uint identifier, WebError error, IWebDataSource dataSource)
+        public void didFailLoadingWithError(WebView webView, uint identifier, WebError error, IWebDataSource dataSource)
         {
             throw new NotImplementedException();
         }
 
-        public void didFinishLoadingFromDataSource(WebView WebView, uint identifier, IWebDataSource dataSource)
+        public void didFinishLoadingFromDataSource(WebView webView, uint identifier, IWebDataSource dataSource)
         {
             throw new NotImplementedException();
         }
 
-        public void didReceiveAuthenticationChallenge(WebView WebView, uint identifier, IWebURLAuthenticationChallenge challenge, IWebDataSource dataSource)
+        public void didReceiveAuthenticationChallenge(WebView webView, uint identifier, IWebURLAuthenticationChallenge challenge, IWebDataSource dataSource)
         {
             throw new NotImplementedException();
         }
 
-        public void didReceiveContentLength(WebView WebView, uint identifier, uint length, IWebDataSource dataSource)
+        public void didReceiveContentLength(WebView webView, uint identifier, uint length, IWebDataSource dataSource)
         {
             throw new NotImplementedException();
         }
 
-        public void didReceiveResponse(WebView WebView, uint identifier, WebURLResponse response, IWebDataSource dataSource)
+        public void didReceiveResponse(WebView webView, uint identifier, WebURLResponse response, IWebDataSource dataSource)
         {
             throw new NotImplementedException();
         }
 
-        public void identifierForInitialRequest(WebView WebView, WebURLRequest request, IWebDataSource dataSource, uint identifier)
+        public void identifierForInitialRequest(WebView webView, WebURLRequest request, IWebDataSource dataSource, uint identifier)
+        {
+            identifierForInitialRequest(webView, (IWebURLRequest)request, dataSource, identifier);
+        }
+
+        public void identifierForInitialRequest(WebView webView, IWebURLRequest request, IWebDataSource dataSource, uint identifier)
         {
             throw new NotImplementedException();
         }
 
-        public void plugInFailedWithError(WebView WebView, WebError error, IWebDataSource dataSource)
+        public void plugInFailedWithError(WebView webView, WebError error, IWebDataSource dataSource)
         {
             throw new NotImplementedException();
         }
 
-        public WebURLRequest willSendRequest(WebView WebView, uint identifier, WebURLRequest request, WebURLResponse redirectResponse, IWebDataSource dataSource)
+        public WebURLRequest willSendRequest(WebView webView, uint identifier, WebURLRequest request, WebURLResponse redirectResponse, IWebDataSource dataSource)
+        {
+            return (WebURLRequest)willSendRequest(webView, identifier, (IWebURLRequest)request, redirectResponse, dataSource);
+        }
+
+        public IWebURLRequest willSendRequest(WebView webView, uint identifier, IWebURLRequest request, WebURLResponse redirectResponse, IWebDataSource dataSource)
         {
             throw new NotImplementedException();
         }

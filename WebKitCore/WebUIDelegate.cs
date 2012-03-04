@@ -103,10 +103,20 @@ namespace WebKit
 
         public WebView createModalDialog(WebView sender, WebURLRequest request)
         {
+            return createModalDialog(sender, (IWebURLRequest)request);
+        }
+
+        public WebView createModalDialog(WebView sender, IWebURLRequest request)
+        {
             throw new NotImplementedException();
         }
 
         public WebView createWebViewWithRequest(WebView sender, WebURLRequest request)
+        {
+            return createWebViewWithRequest(sender, (IWebURLRequest)request);
+        }
+
+        public WebView createWebViewWithRequest(WebView sender, IWebURLRequest request)
         {
             // this should be caught in the WebPolicyDelegate, but isn't in the Cairo build
             if (owner.AllowNewWindows)

@@ -51,11 +51,16 @@ namespace WebKit
 
         #region IWebPolicyDelegate Members
 
-        public void decidePolicyForMIMEType(WebView WebView, string type, WebURLRequest request, IWebFrame frame, IWebPolicyDecisionListener listener)
+        public void decidePolicyForMIMEType(WebView webView, string type, WebURLRequest request, IWebFrame frame, IWebPolicyDecisionListener listener)
+        {
+            decidePolicyForMIMEType(webView, type, (IWebURLRequest)request, frame, listener);
+        }
+
+        public void decidePolicyForMIMEType(WebView webView, string type, IWebURLRequest request, IWebFrame frame, IWebPolicyDecisionListener listener)
         {
             // todo: add support for showing custom MIME type documents
             // and for changing which MIME types are handled here
-            if (WebView.canShowMIMEType(type) == 0)
+            if (webView.canShowMIMEType(type) == 0)
             {
                 if (AllowDownloads)
                     listener.download();
@@ -68,7 +73,12 @@ namespace WebKit
             }
         }
 
-        public void decidePolicyForNavigationAction(WebView WebView, CFDictionaryPropertyBag actionInformation, WebURLRequest request, IWebFrame frame, IWebPolicyDecisionListener listener)
+        public void decidePolicyForNavigationAction(WebView webView, CFDictionaryPropertyBag actionInformation, WebURLRequest request, IWebFrame frame, IWebPolicyDecisionListener listener)
+        {
+            decidePolicyForNavigationAction(webView, actionInformation, (IWebURLRequest)request, frame, listener);
+        }
+
+        public void decidePolicyForNavigationAction(WebView webView, CFDictionaryPropertyBag actionInformation, IWebURLRequest request, IWebFrame frame, IWebPolicyDecisionListener listener)
         {
             if (AllowNavigation || AllowInitialNavigation)
                 listener.use();
@@ -76,7 +86,12 @@ namespace WebKit
                 listener.ignore();
         }
 
-        public void decidePolicyForNewWindowAction(WebView WebView, CFDictionaryPropertyBag actionInformation, WebURLRequest request, string frameName, IWebPolicyDecisionListener listener)
+        public void decidePolicyForNewWindowAction(WebView webView, CFDictionaryPropertyBag actionInformation, WebURLRequest request, string frameName, IWebPolicyDecisionListener listener)
+        {
+            decidePolicyForNewWindowAction(webView, actionInformation, (IWebURLRequest)request, frameName, listener);
+        }
+
+        public void decidePolicyForNewWindowAction(WebView webView, CFDictionaryPropertyBag actionInformation, IWebURLRequest request, string frameName, IWebPolicyDecisionListener listener)
         {
             if (AllowNewWindows)
                 listener.use();
