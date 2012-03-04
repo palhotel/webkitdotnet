@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0555 */
-/* at Fri Mar 02 08:09:02 2012
+/* at Sat Mar 03 22:06:09 2012
  */
 /* Compiler settings for ..\Interfaces\WebKit.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
@@ -1318,6 +1318,22 @@ extern "C"{
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#if 0
+typedef long HWND;
+
+typedef long HDC;
+
+typedef long HACCEL;
+
+typedef long HMENU;
+
+typedef long HICON;
+
+typedef long HFONT;
+
+typedef long HRGN;
+
+#endif
 extern const GUID  __declspec(selectany) SID_AccessibleComparable = { 0x62b8cb5f, 0xfb7a, 0x4faf, 0x81, 0xe8, 0x52, 0xb6, 0x5f, 0x12, 0x8b, 0x31 };
 
 
@@ -40108,11 +40124,6 @@ unsigned long             __RPC_USER  HBITMAP_UserSize(     unsigned long *, uns
 unsigned char * __RPC_USER  HBITMAP_UserMarshal(  unsigned long *, unsigned char *, HBITMAP * ); 
 unsigned char * __RPC_USER  HBITMAP_UserUnmarshal(unsigned long *, unsigned char *, HBITMAP * ); 
 void                      __RPC_USER  HBITMAP_UserFree(     unsigned long *, HBITMAP * ); 
-
-unsigned long             __RPC_USER  HDC_UserSize(     unsigned long *, unsigned long            , HDC * ); 
-unsigned char * __RPC_USER  HDC_UserMarshal(  unsigned long *, unsigned char *, HDC * ); 
-unsigned char * __RPC_USER  HDC_UserUnmarshal(unsigned long *, unsigned char *, HDC * ); 
-void                      __RPC_USER  HDC_UserFree(     unsigned long *, HDC * ); 
 
 unsigned long             __RPC_USER  VARIANT_UserSize(     unsigned long *, unsigned long            , VARIANT * ); 
 unsigned char * __RPC_USER  VARIANT_UserMarshal(  unsigned long *, unsigned char *, VARIANT * ); 
