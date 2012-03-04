@@ -53,8 +53,10 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
-      <Command>
-      </Command>
+      <Command>ECHO Generating WebKit.Interop...
+tlbimp "$(SolutionDir)webkit\lib\webkit.tlb" /silent /keyfile:"$(SolutionDir)WebKit.NET.snk" /namespace:WebKit.Interop /out:"$(OutDir)..\WebKit.Interop.dll"
+</Command>
+      <Message>Generating WebKit.Interop...</Message>
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -76,8 +78,10 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PreBuildEvent>
-      <Command>
-      </Command>
+      <Command>ECHO Generating WebKit.Interop...
+tlbimp "$(SolutionDir)webkit\lib\webkit.tlb" /silent /keyfile:"$(SolutionDir)WebKit.NET.snk" /namespace:WebKit.Interop /out:"$(OutDir)..\WebKit.Interop.dll"
+</Command>
+      <Message>Generating WebKit.Interop...</Message>
     </PreBuildEvent>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)webkit\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

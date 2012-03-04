@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin\net2.0\$(Configuration)"
+			IntermediateDirectory="$(SolutionDir)obj\net2.0\$(ProjectName)\$(Configuration)"
 			ConfigurationType="2"
 			CharacterSet="1"
 			ManagedExtensions="1"
@@ -93,8 +93,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin\net2.0\$(Configuration)"
+			IntermediateDirectory="$(SolutionDir)obj\net2.0\$(ProjectName)\$(Configuration)"
 			ConfigurationType="2"
 			CharacterSet="1"
 			ManagedExtensions="1"
@@ -173,7 +173,7 @@
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
-			RelativePath="..\webkit\WebKit.Interop.dll"
+			RelativePath="..\bin\net2.0\WebKit.Interop.dll"
 			AssemblyName="WebKit.Interop, Version=534.0.0.0, PublicKeyToken=b967213f6d29a3be, processorArchitecture=MSIL"
 			MinFrameworkVersion="0"
 		/>

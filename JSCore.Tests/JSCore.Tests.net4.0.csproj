@@ -81,7 +81,8 @@
   <ItemGroup>
     <ProjectReference Include="..\JSCore\JSCore.net4.0.vcxproj">
       <Project>{287EEE45-1390-44D5-982F-0B96D4A077DA}</Project>
-      <Name>JSCore.net4.0</Name>
+      <Name>JSCore</Name>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
