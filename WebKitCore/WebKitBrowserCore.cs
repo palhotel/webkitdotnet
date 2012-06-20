@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
@@ -11,6 +12,8 @@ using WebKit.JSCore;
 
 namespace WebKit
 {
+    using System.Threading;
+
     public class WebKitBrowserCore : IWebKitBrowser
     {
         // static variables
@@ -21,6 +24,8 @@ namespace WebKit
         private IWebView webView;
         private IntPtr webViewHWND;
         private IWebKitBrowserHost host;
+        private WebNotificationObserver webNotificationObserver;
+        private WebNotificationCenter webNotificationCenter;
 
         // Note: we do not provide overridden Equals or GetHashCode methods for the
         // WebDownload interface used as a key here - the default implementations should suffice
@@ -49,7 +54,7 @@ namespace WebKit
 
         // public events, roughly the same as in WebBrowser class
         // using the null object pattern to avoid null tests
-        
+
         /// <summary>
         /// Occurs when the DocumentTitle property value changes.
         /// </summary>
@@ -91,6 +96,21 @@ namespace WebKit
         public event NewWindowCreatedEventHandler NewWindowCreated = delegate { };
 
         /// <summary>
+        /// Occures when WebKitBrowser control has begun to provide information on the download progress of a document it is navigating to.
+        /// </summary>
+        public event ProgressStartedEventHandler ProgressStarted = delegate { };
+
+        /// <summary>
+        /// Occures when WebKitBrowser control is no longer providing information on the download progress of a document it is navigating to.
+        /// </summary>
+        public event ProgressFinishedEventHandler ProgressFinished = delegate { };
+
+        /// <summary>
+        /// Occurs when the WebKitBrowser control has updated information on the download progress of a document it is navigating to.
+        /// </summary>
+        public event ProgressChangedEventHandler ProgressChanged = delegate { };
+
+        /// <summary>
         /// Occurs when JavaScript requests an alert panel to be displayed via the alert() function.
         /// </summary>
         public event ShowJavaScriptAlertPanelEventHandler ShowJavaScriptAlertPanel = delegate { };
@@ -108,6 +128,16 @@ namespace WebKit
         #endregion
 
         #region Public properties
+
+        /// <summary>
+        /// The HTTP Basic Authentication UserName
+        /// </summary>
+        public string UserName { get; set; }
+
+        /// <summary>
+        /// The HTTP Basic Authentication Password
+        /// </summary>
+        public string Password { private get; set; }
 
         /// <summary>
         /// The current print page settings.
@@ -129,7 +159,7 @@ namespace WebKit
                 if (loaded)
                 {
                     Uri result;
-                    return Uri.TryCreate(webView.mainFrame().dataSource().request().url(), 
+                    return Uri.TryCreate(webView.mainFrame().dataSource().request().url(),
                         UriKind.Absolute, out result) ? result : null;
                 }
                 else
@@ -269,10 +299,10 @@ namespace WebKit
         }
 
         /// <summary>
-        /// Gets or sets whether the control can navigate to another page 
+        /// Gets or sets whether the control can navigate to another page
         /// once it's initial page has loaded.
         /// </summary>
-        public bool AllowNavigation 
+        public bool AllowNavigation
         {
             get
             {
@@ -487,10 +517,10 @@ namespace WebKit
         public object ObjectForScripting
         {
             get { return _scriptObject; }
-            set 
-            { 
-                _scriptObject = value; 
-                CreateWindowScriptObject((JSContext)GetGlobalScriptContext()); 
+            set
+            {
+                _scriptObject = value;
+                CreateWindowScriptObject((JSContext)GetGlobalScriptContext());
             }
         }
 
@@ -522,24 +552,32 @@ namespace WebKit
         /// <param name="host">The host.</param>
         public void Initialize(IWebKitBrowserHost host)
         {
-            if(host == null)
+            if (host == null)
+            {
                 throw new ArgumentNullException("host");
+            }
 
             this.host = host;
 
-            if(!host.InDesignMode)
+            if (!host.InDesignMode)
             {
-                // Control Events            
-                this.host.Load += new EventHandler(WebKitBrowser_Load);
-                this.host.Resize += new EventHandler(WebKitBrowser_Resize);
+                // Control Events
+                this.host.Load += WebKitBrowser_Load;
+                this.host.Resize += WebKitBrowser_Resize;
 
                 // If this is the first time the library has been loaded,
                 // initialize the activation context required to load the
-                // WebKit COM component registration free
-                if((actCtxRefCount++) == 0)
+                // WebKit COM component registration free.
+                if (Interlocked.Increment(ref actCtxRefCount) == 1)
                 {
                     FileInfo fi = new FileInfo(Assembly.GetExecutingAssembly().Location);
-                    activationContext = new ActivationContext(Path.Combine(fi.DirectoryName, "WebKitBrowser.dll.manifest"));
+                    string manifestPath = Path.Combine(fi.DirectoryName, "WebKitBrowser.dll.manifest");
+                    if (string.IsNullOrEmpty(manifestPath))
+                    {
+                        throw new ApplicationException("Failed to locate 'WebKitBrowser.dll.manifest' file.");
+                    }
+
+                    activationContext = new ActivationContext(manifestPath);
                     activationContext.Initialize();
 
                     // TODO: more error handling here
@@ -549,11 +587,8 @@ namespace WebKit
                     Application.OleRequired();
                 }
 
-                // If this control is brought to focus, focus our webkit child window
-                this.host.GotFocus += (s, e) =>
-                {
-                    NativeMethods.SetFocus(webViewHWND);
-                };
+                // If this control is brought to focus, focus our webkit child window.
+                this.host.GotFocus += (s, e) => NativeMethods.SetFocus(webViewHWND);
 
                 activationContext.Activate();
                 webView = new WebViewClass();
@@ -576,6 +611,13 @@ namespace WebKit
 
             uiDelegate = new WebUIDelegate(this);
             Marshal.AddRef(Marshal.GetIUnknownForObject(uiDelegate));
+
+            webNotificationCenter = new WebNotificationCenter();
+            Marshal.AddRef(Marshal.GetIUnknownForObject(webNotificationCenter)); // TODO: find out if this is really needed
+            webNotificationObserver = new WebNotificationObserver();
+            webNotificationCenter.defaultCenter().addObserver(webNotificationObserver, "WebProgressEstimateChangedNotification", webView);
+            webNotificationCenter.defaultCenter().addObserver(webNotificationObserver, "WebProgressStartedNotification", webView);
+            webNotificationCenter.defaultCenter().addObserver(webNotificationObserver, "WebProgressFinishedNotification", webView);
 
             webView.setPolicyDelegate(policyDelegate);
             webView.setFrameLoadDelegate(frameLoadDelegate);
@@ -616,6 +658,9 @@ namespace WebKit
             uiDelegate.RunJavaScriptConfirmPanelWithMessage += new RunJavaScriptConfirmPanelWithMessageEvent(uiDelegate_RunJavaScriptConfirmPanelWithMessage);
             uiDelegate.RunJavaScriptTextInputPanelWithPrompt += new RunJavaScriptTextInputPanelWithPromptEvent(uiDelegate_RunJavaScriptTextInputPanelWithPrompt);
 
+            // Notification events
+            webNotificationObserver.OnNotify += new OnNotifyEvent(webNotificationObserver_OnNotify);
+
             activationContext.Deactivate();
         }
 
@@ -626,7 +671,7 @@ namespace WebKit
         private void WebKitBrowser_Resize(object sender, EventArgs e)
         {
             // Resize the WebKit control
-            NativeMethods.MoveWindow(webViewHWND, 0, 0, this.host.Width - 1, this.host.Height - 1, true);
+            NativeMethods.MoveWindow(webViewHWND, 0, 0, this.host.Width, this.host.Height, true);
         }
 
         private void WebKitBrowser_Load(object sender, EventArgs e)
@@ -646,13 +691,21 @@ namespace WebKit
                 DocumentText = initialText;
                 policyDelegate.AllowInitialNavigation = false;
             }
-
+            if (_scriptObject !=null)
+                CreateWindowScriptObject((JSContext)GetGlobalScriptContext());
             IsScriptingEnabled = initialJavaScriptEnabled;
+        }
+
+        private void WebKitBrowser_HandleDestroyed(object sender, EventArgs e)
+        {
+            webNotificationCenter.defaultCenter().removeObserver(webNotificationObserver, "WebProgressEstimateChangedNotification", webView);
+            webNotificationCenter.defaultCenter().removeObserver(webNotificationObserver, "WebProgressStartedNotification", webView);
+            webNotificationCenter.defaultCenter().removeObserver(webNotificationObserver, "WebProgressFinishedNotification", webView);
         }
 
         #endregion
 
-        #region WebFrameLoadDelegate event handlers 
+        #region WebFrameLoadDelegate event handlers
 
         private void frameLoadDelegate_DidCommitLoadForFrame(WebView WebView, IWebFrame frame)
         {
@@ -667,6 +720,10 @@ namespace WebKit
             if (frame == webView.mainFrame())
             {
                 string url = frame.provisionalDataSource().request().url();
+                if (url == "")
+                {
+                    url = "about:blank";
+                }
                 Navigating(this, new WebBrowserNavigatingEventArgs(new Uri(url), frame.name()));
             }
         }
@@ -700,10 +757,10 @@ namespace WebKit
 
         private void frameLoadDelegate_DidFailLoadWithError(WebView WebView, IWebError error, IWebFrame frame)
         {
-            Error(this, new WebKitBrowserErrorEventArgs(error.localizedDescription())); 
+            Error(this, new WebKitBrowserErrorEventArgs(error.localizedDescription()));
         }
 
-        private void frameLoadDelegate_DidClearWindowObject(WebView WebView, IntPtr context, IntPtr windowScriptObject, webFrame frame)
+        private void frameLoadDelegate_DidClearWindowObject(WebView WebView, IntPtr context, IntPtr windowScriptObject, IWebFrame frame)
         {
             CreateWindowScriptObject(new JSContext(context));
         }
@@ -799,6 +856,31 @@ namespace WebKit
 
         #endregion
 
+        #region WebNotificationObserver event handlers
+
+        private void webNotificationObserver_OnNotify(IWebNotification notification)
+        {
+            switch (notification.name())
+            {
+                case "WebProgressStartedNotification":
+                    EventArgs started_args = new EventArgs();
+                    ProgressStarted(this, started_args);
+                    break;
+                case "WebProgressFinishedNotification":
+                    EventArgs finished_args = new EventArgs();
+                    ProgressFinished(this, finished_args);
+                    break;
+                case "WebProgressEstimateChangedNotification":
+                    ProgressChangedEventArgs changed_args = new ProgressChangedEventArgs((int)(webView.estimatedProgress() * 100), null);
+                    ProgressChanged(this, changed_args);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>
@@ -816,10 +898,19 @@ namespace WebKit
                 activationContext.Activate();
 
                 WebMutableURLRequest request = new WebMutableURLRequestClass();
-                request.initWithURL(url, _WebURLRequestCachePolicy.WebURLRequestUseProtocolCachePolicy, 60);
+                request.initWithURL(url, _WebURLRequestCachePolicy.WebURLRequestReloadIgnoringCacheData, 60);
                 request.setHTTPMethod("GET");
 
-                webView.mainFrame().loadRequest(request);
+                //use basic authentication if username and password are supplied.
+                if (!string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password))
+                    request.setValue("Basic " + Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(
+                        string.Format("{0}:{1}", UserName, Password))), "Authorization");
+
+                webView.mainFrame().loadRequest((WebURLRequest)request);
+
+                WebPreferences p = webView.preferences();
+                p.setMinimumFontSize(16);
+                p.setFontSmoothing(FontSmoothingType.FontSmoothingTypeWindows);
 
                 activationContext.Deactivate();
             }
@@ -870,7 +961,7 @@ namespace WebKit
         }
 
         /// <summary>
-        /// Stops loading the current web page and any resources associated 
+        /// Stops loading the current web page and any resources associated
         /// with it.
         /// </summary>
         public void Stop()
@@ -916,6 +1007,16 @@ namespace WebKit
                 return new JSContext(webView.mainFrame());
             else
                 return null;
+        }
+
+        public void ShowInspector()
+        {
+            if (webView != null)
+            {
+                IWebViewPrivate v = (IWebViewPrivate)webView;
+                v.inspector().attach();
+                v.inspector().show();
+            }
         }
 
         #endregion Public Methods
@@ -968,12 +1069,14 @@ namespace WebKit
         public void ShowPrintPreviewDialog()
         {
             // TODO: find out why it apparently only shows the first page on the preview...
-            PrintPreviewDialog printDlg = new PrintPreviewDialog();
-            PrintDocument doc = this.GetCommonPrintDocument();
-            printDlg.Document = doc;
-            PrintManager pm = new PrintManager(doc, this.host, this, true);
-            pm.Print();
-            printDlg.ShowDialog();
+            using (PrintPreviewDialog printDlg = new PrintPreviewDialog())
+            {
+                PrintDocument doc = GetCommonPrintDocument();
+                printDlg.Document = doc;
+                PrintManager pm = new PrintManager(doc, this.host, this, true);
+                pm.Print();
+                printDlg.ShowDialog();
+            }
         }
 
         // Gets a PrintDocument with the current default settings.
@@ -990,15 +1093,16 @@ namespace WebKit
 
         public void Dispose(bool disposing)
         {
-            if(disposed)
-                return;
-            
-            if((--actCtxRefCount) == 0 && activationContext != null)
+            if (disposed)
             {
-                activationContext.Dispose();
+                return;
             }
 
-            disposed = true;
+            if (Interlocked.Decrement(ref actCtxRefCount) == 0 && activationContext != null)
+            {
+                activationContext.Dispose();
+                disposed = true;
+            }
         }
 
         private void CreateWindowScriptObject(JSContext context)
@@ -1007,11 +1111,27 @@ namespace WebKit
             {
                 JSObject global = context.GetGlobalObject();
                 JSValue window = global.GetProperty("window");
-                if (window == null || !window.IsObject) return;
+                if (window == null || !window.IsObject)
+                {
+                    return;
+                }
+
                 JSObject windowObj = window.ToObject();
-                if (windowObj == null) return;
-                windowObj.SetProperty("external", (object)ObjectForScripting);
+                if (windowObj == null)
+                {
+                    return;
+                }
+
+                windowObj.SetProperty("external", ObjectForScripting);
             }
         }
+
+        public event EventHandler ContextMenuOpen;  /* {@@} */
+        public void ContextMenuShow()               /* {@@} */
+        {                                           /* {@@} */
+            EventArgs e = new EventArgs();          /* {@@} */
+            if (ContextMenuOpen != null)            /* {@@} */
+                ContextMenuOpen(this, e);           /* {@@} */
+        }                                           /* {@@} */
     }
 }

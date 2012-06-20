@@ -1,42 +1,44 @@
 ﻿/*
  * Copyright (c) 2009, Peter Nelson (charn.opcode@gmail.com)
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
- * * Redistributions of source code must retain the above copyright notice, 
+ *
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- *   
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Handles events relating to UI changes.  More info at 
+// Handles events relating to UI changes.  More info at
 // http://developer.apple.com/documentation/Cocoa/Reference/WebKit/Protocols/WebUIDelegate_Protocol
 
 // TODO: most of these events aren't used at all (yet). Find out what they
 // do and whether they are actually working in WebKit.
 
 using System;
-using System.Drawing.Printing;
 using WebKit.Interop;
 
 namespace WebKit
 {
+    using System.Drawing.Printing;
+
     internal delegate void CreateWebViewWithRequestEvent(IWebURLRequest request, out WebView webView);
+    internal delegate string FTPDirectoryTemplatePath(WebView WebView);
     internal delegate void RunJavaScriptAlertPanelWithMessageEvent(WebView sender, string message);
     internal delegate int RunJavaScriptConfirmPanelWithMessageEvent(WebView sender, string message);
     internal delegate string RunJavaScriptTextInputPanelWithPromptEvent(WebView sender, string message, string defaultText);
@@ -44,6 +46,7 @@ namespace WebKit
     internal class WebUIDelegate : IWebUIDelegate
     {
         public event CreateWebViewWithRequestEvent CreateWebViewWithRequest;
+        public event FTPDirectoryTemplatePath FTPDirectoryTemplatePath;
         public event RunJavaScriptAlertPanelWithMessageEvent RunJavaScriptAlertPanelWithMessage;
         public event RunJavaScriptConfirmPanelWithMessageEvent RunJavaScriptConfirmPanelWithMessage;
         public event RunJavaScriptTextInputPanelWithPromptEvent RunJavaScriptTextInputPanelWithPrompt;
@@ -91,12 +94,26 @@ namespace WebKit
 
         public int contextMenuItemsForElement(WebView sender, CFDictionaryPropertyBag element, int defaultItemsHMenu)
         {
+            if (!owner.IsWebBrowserContextMenuEnabled)  /* {@@} */
+            {                                           /* {@@} */
+                owner.ContextMenuShow();                /* {@@} */
+            }                                           /* {@@} */
             return owner.IsWebBrowserContextMenuEnabled ? defaultItemsHMenu : 0;
+        }
+
+        public WebView createModalDialog(WebView sender, WebURLRequest request)
+        {
+            return createModalDialog(sender, (IWebURLRequest)request);
         }
 
         public WebView createModalDialog(WebView sender, IWebURLRequest request)
         {
             throw new NotImplementedException();
+        }
+
+        public WebView createWebViewWithRequest(WebView sender, WebURLRequest request)
+        {
+            return createWebViewWithRequest(sender, (IWebURLRequest)request);
         }
 
         public WebView createWebViewWithRequest(WebView sender, IWebURLRequest request)
@@ -116,7 +133,7 @@ namespace WebKit
 
         public WebDragDestinationAction dragDestinationActionMaskForDraggingInfo(WebView WebView, IDataObject draggingInfo)
         {
-            return WebDragDestinationAction.WebDragDestinationActionNone;            
+            return WebDragDestinationAction.WebDragDestinationActionNone;
         }
 
         public WebDragSourceAction dragSourceActionMaskForPoint(WebView WebView, ref tagPOINT point)
@@ -136,8 +153,14 @@ namespace WebKit
         {
         }
 
+        // TODO: Um, what does this do? I can't figure it out from the source code and can't find it
+        // in the docs.
+        // From: https://trac.webkit.org/timeline?from=2007-07-15&daysback=4
+        // --> Set the path to the FTP listing document template
         public string ftpDirectoryTemplatePath(WebView WebView)
         {
+            //return FTPDirectoryTemplatePath(WebView);
+            // You'd think the above would work but it's returning NullReferenceException
             return "";
         }
 
@@ -171,7 +194,7 @@ namespace WebKit
         {
         }
 
-        public void printFrame(WebView WebView, webFrame frame)
+        public void printFrame(WebView WebView, IWebFrame frame)
         {
         }
 
@@ -187,12 +210,12 @@ namespace WebKit
         {
         }
 
-        public int runBeforeUnloadConfirmPanelWithMessage(WebView sender, string message, webFrame initiatedByFrame)
+        public int runBeforeUnloadConfirmPanelWithMessage(WebView sender, string message, IWebFrame initiatedByFrame)
         {
             throw new NotImplementedException();
         }
 
-        public int runDatabaseSizeLimitPrompt(WebView WebView, string displayName, webFrame initiatedByFrame)
+        public int runDatabaseSizeLimitPrompt(WebView WebView, string displayName, IWebFrame initiatedByFrame)
         {
             throw new NotImplementedException();
         }
@@ -303,7 +326,7 @@ namespace WebKit
 
         public tagRECT webViewFrame(WebView sender)
         {
-            throw new NotImplementedException();
+            return ((WebViewClass)sender).visibleContentRect();
         }
 
         public float webViewHeaderHeight(WebView WebView)
@@ -333,7 +356,7 @@ namespace WebKit
             int marginRight = settings.Margins.Right;
             int marginTop = settings.Margins.Top;
             int marginBottom = settings.Margins.Bottom;
-            
+
             tagRECT rect = new tagRECT();
             rect.left = marginLeft * 10;
             rect.top = marginTop * 10;

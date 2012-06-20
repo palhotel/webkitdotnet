@@ -39,7 +39,7 @@
     [TestFixture]
     public class TestIntegration
     {
-        protected JSContext Context { get; set; }
+        private JSContext Context { get; set; }
 
         [TestFixtureSetUp]
         public void FixtureSetup()

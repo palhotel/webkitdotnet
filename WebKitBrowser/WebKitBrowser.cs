@@ -1,26 +1,26 @@
 ﻿/*
  * Copyright (c) 2009, Peter Nelson (charn.opcode@gmail.com)
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
- * * Redistributions of source code must retain the above copyright notice, 
+ *
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- *   
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
 */
 
@@ -51,13 +51,13 @@ namespace WebKit
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             Keys key = (Keys)msg.WParam.ToInt32();
-            if (key == Keys.Left || key == Keys.Right || key == Keys.Up || 
+            if (key == Keys.Left || key == Keys.Right || key == Keys.Up ||
                 key == Keys.Down || key == Keys.Tab)
             {
-                NativeMethods.SendMessage(core.WebViewHWND, (uint)msg.Msg, msg.WParam, msg.LParam);
+                NativeMethods.SendMessage(msg.HWnd, (uint)msg.Msg, msg.WParam, msg.LParam);
                 return true;
             }
-            
+
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
@@ -67,7 +67,7 @@ namespace WebKit
 
         // public events, roughly the same as in WebBrowser class
         // using the null object pattern to avoid null tests
-        
+
         /// <summary>
         /// Occurs when the DocumentTitle property value changes.
         /// </summary>
@@ -141,6 +141,33 @@ namespace WebKit
         }
 
         /// <summary>
+        /// Occures when WebKitBrowser control has begun to provide information on the download progress of a document it is navigating to.
+        /// </summary>
+        public event ProgressStartedEventHandler ProgressStarted
+        {
+            add { core.ProgressStarted += value; }
+            remove { core.ProgressStarted -= value; }
+        }
+
+        /// <summary>
+        /// Occures when WebKitBrowser control is no longer providing information on the download progress of a document it is navigating to.
+        /// </summary>
+        public event ProgressFinishedEventHandler ProgressFinished
+        {
+            add { core.ProgressFinished += value; }
+            remove { core.ProgressFinished -= value; }
+        }
+
+        /// <summary>
+        /// Occurs when the WebKitBrowser control has updated information on the download progress of a document it is navigating to.
+        /// </summary>
+        public event ProgressChangedEventHandler ProgressChanged
+        {
+            add { core.ProgressChanged += value; }
+            remove { core.ProgressChanged -= value; }
+        }
+
+        /// <summary>
         /// Occurs when JavaScript requests an alert panel to be displayed via the alert() function.
         /// </summary>
         public event ShowJavaScriptAlertPanelEventHandler ShowJavaScriptAlertPanel
@@ -167,9 +194,29 @@ namespace WebKit
             remove { core.ShowJavaScriptPromptPanel -= value; }
         }
 
+
         #endregion
 
         #region Public properties
+
+        /// <summary>
+        /// The HTTP Basic Authentication UserName
+        /// </summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string UserName
+        {
+            get { return core.UserName; }
+            set { core.UserName = value; }
+        }
+
+        /// <summary>
+        /// The HTTP Basic Authentication Password
+        /// </summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string Password
+        {
+            set { core.Password = value; }
+        }
 
         /// <summary>
         /// The current print page settings.
@@ -262,13 +309,13 @@ namespace WebKit
         }
 
         /// <summary>
-        /// Gets or sets whether the control can navigate to another page 
+        /// Gets or sets whether the control can navigate to another page
         /// once it's initial page has loaded.
         /// </summary>
         [Browsable(true), DefaultValue(true), Category("Behavior")]
         [Description("Specifies whether the control can navigate" +
             " to another page once it's initial page has loaded.")]
-        public bool AllowNavigation 
+        public bool AllowNavigation
         {
             get { return core.AllowNavigation; }
             set { core.AllowNavigation = value; }
@@ -401,8 +448,8 @@ namespace WebKit
             Navigated += delegate { };
             DocumentCompleted += delegate { };
             DocumentTitleChanged += delegate { };
-            ShowJavaScriptAlertPanel += delegate { }; 
-            ShowJavaScriptConfirmPanel += delegate { }; 
+            ShowJavaScriptAlertPanel += delegate { };
+            ShowJavaScriptConfirmPanel += delegate { };
             ShowJavaScriptPromptPanel += delegate { };
             InitializeComponent();
 
@@ -420,6 +467,14 @@ namespace WebKit
         public void Navigate(string url)
         {
             core.Navigate(url);
+        }
+
+        /// <summary>
+        /// Show the web inspector.
+        /// </summary>
+        public void ShowInspector()
+        {
+            core.ShowInspector();
         }
 
         /// <summary>
@@ -458,7 +513,7 @@ namespace WebKit
         }
 
         /// <summary>
-        /// Stops loading the current web page and any resources associated 
+        /// Stops loading the current web page and any resources associated
         /// with it.
         /// </summary>
         public void Stop()
@@ -539,5 +594,11 @@ namespace WebKit
         {
             get { return LicenseManager.UsageMode == LicenseUsageMode.Designtime; }
         }
+
+        public event EventHandler ContextMenuOpen       /* {@@} */
+        {                                               /* {@@} */
+            add { core.ContextMenuOpen += value; }      /* {@@} */
+            remove { core.ContextMenuOpen -= value; }   /* {@@} */
+        }                                               /* {@@} */
     }
 }

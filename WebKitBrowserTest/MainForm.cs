@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2009, Peter Nelson (charn.opcode@gmail.com)
  * All rights reserved.
  * 
@@ -24,22 +24,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
 */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using System.Collections;
-using System.Threading;
-
-using WebKit;
-using WebKit.DOM;
-using WebKit.JSCore;
-
 namespace WebKitBrowserTest
 {
+    using System;
+    using System.Threading;
+    using System.Windows.Forms;
+
+    using WebKit;
+    using WebKit.JSCore;
+
     public partial class MainForm : Form
     {
         WebBrowserTabPage currentPage;
@@ -92,6 +85,8 @@ namespace WebKitBrowserTest
             currentPage.browser.DownloadBegin += new FileDownloadBeginEventHandler(browser_DownloadBegin);
             currentPage.browser.NewWindowRequest += new NewWindowRequestEventHandler(browser_NewWindowRequest);
             currentPage.browser.NewWindowCreated += new NewWindowCreatedEventHandler(browser_NewWindowCreated);
+
+            currentPage.WindowClosing += new EventHandler(currentPage_WindowClosing);   /* {@@} */
         }
 
         void browser_NewWindowCreated(object sender, NewWindowCreatedEventArgs args)
@@ -142,6 +137,8 @@ namespace WebKitBrowserTest
             currentPage.browser.DocumentTitleChanged -= browser_DocumentTitleChanged;
             currentPage.browser.NewWindowCreated -= browser_NewWindowCreated;
             currentPage.browser.NewWindowRequest -= browser_NewWindowRequest;
+
+            currentPage.WindowClosing -= currentPage_WindowClosing; /* {@@} */
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -254,7 +251,10 @@ namespace WebKitBrowserTest
         {
             JSContext ctx = (JSContext)currentPage.browser.GetGlobalScriptContext();
             JSValue val = ctx.EvaluateScript("f()");
-            MessageBox.Show(val.ToString());
+            if (val != null)
+                MessageBox.Show(val.ToString());
+            else
+                MessageBox.Show("Execute 'Test Page', first.", "Uggggmmmm...");
         }
 
         private void jSTestPageToolStripMenuItem_Click(object sender, EventArgs e)
@@ -299,7 +299,46 @@ window.onload = function() {
    
             //ctx.GarbageCollect();
         }
+        
+        private void setPasswordToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PasswordDialog passDG = new PasswordDialog();
+            if (passDG.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                currentPage.browser.Password = passDG.Password;
+                currentPage.browser.UserName = passDG.Username;
+            }
+        }
 
-       
+        /* {@@} */
+        private void currentPage_WindowClosing(object sender, EventArgs e)
+        {
+            WebBrowserTabPage tab = (WebBrowserTabPage)sender;
+            if (tab == currentPage)
+                closeTabToolStripMenuItem_Click(sender, e);
+        }
+        /* {@@} */
+
+        private void objectForScriptingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            currentPage.browser.DocumentText = @"<!DOCTYPE html>
+<html>
+<head>
+<script>
+alert('typeof external.propName='  + typeof external.propName);
+alert('result of getting external.propName='  + external.propName);
+alert('typeof external.foo='  + typeof external.foo);
+try {
+    alert('result from calling external.foo(\'bar\'):' + external.foo('bar'));
+}catch(e){
+alert('exception when calling external.foo(\'bar\'):' + e.message);
+}
+</script>
+</head>
+<body>
+</body>
+</html>
+";
+        }
     }
 }
