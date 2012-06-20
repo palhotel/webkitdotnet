@@ -1,6 +1,7 @@
 #pragma once
 
 using namespace System;
+using namespace System::Collections::Generic;
 using namespace System::Runtime::InteropServices;
 using namespace WebKit::Interop;
 using namespace WebKit::JSCore;
@@ -49,6 +50,8 @@ public:
     virtual bool TryGetMember(System::Dynamic::GetMemberBinder^ binder, [OutAttribute] Object ^% result) override;
     virtual bool TrySetMember(System::Dynamic::SetMemberBinder^ binder, Object ^ result) override;
     virtual bool TryInvokeMember(System::Dynamic::InvokeMemberBinder^ binder, array<Object ^> ^ args, [OutAttribute] Object ^% result) override;
+		virtual bool TryGetIndex(System::Dynamic::GetIndexBinder^ binder, array<Object ^> ^ indexes, [OutAttribute] Object ^% result) override;
+		virtual IEnumerable<String ^>^ GetDynamicMemberNames(void) override;
 #endif
 
 internal:

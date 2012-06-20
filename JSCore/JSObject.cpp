@@ -30,6 +30,14 @@ JSValue ^ JSObject::GetProperty(String ^ propertyName)
     return gcnew JSValue(_context, val);
 }
 
+JSValue ^ JSObject::GetIndex(int index)
+{
+	JSObjectRef o = JSValueToObject(_context->context(), _value, NULL);
+
+	JSValueRef val = JSObjectGetPropertyAtIndex(_context->context(), o, index, NULL);
+	return gcnew JSValue(_context, val);
+}
+
 void JSObject::SetProperty(String ^ propertyName, bool value)
 {
     SetProperty(propertyName, JSValueMakeBoolean(_context->context(), value));

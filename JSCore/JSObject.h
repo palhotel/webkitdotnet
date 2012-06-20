@@ -16,6 +16,7 @@ public ref class JSObject : public WebKit::JSCore::JSValue
 public:
     bool HasProperty(String ^ propertyName);
     JSValue ^ GetProperty(String ^ propertyName);
+		JSValue ^ GetIndex(int index);
     void SetProperty(String ^ propertyName, bool value);
     void SetProperty(String ^ propertyName, double value);
     void SetProperty(String ^ propertyName, System::Object ^ value);

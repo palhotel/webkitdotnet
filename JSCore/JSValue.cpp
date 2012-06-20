@@ -183,5 +183,30 @@ bool JSValue::TryInvokeMember(System::Dynamic::InvokeMemberBinder ^ binder, arra
     result = obj->CallFunction(binder->Name, args);
     return true;
 }
+
+bool JSValue::TryGetIndex(System::Dynamic::GetIndexBinder^ binder, array<Object ^> ^ indexes, [OutAttribute] Object ^% result) 
+{
+  if(!IsObject) return false;
+  JSObject ^ obj = (JSObject^)this;
+	result = obj->GetIndex((int)indexes[0]);
+	return true;
+}
+
+IEnumerable<String ^>^ JSValue::GetDynamicMemberNames(void)
+{
+	List<String ^> ^ list = gcnew List<String ^>();
+  if(!IsObject) return list;
+	JSPropertyNameArrayRef properties = JSObjectCopyPropertyNames(_context->context(), (JSObjectRef)_value);
+	size_t count = JSPropertyNameArrayGetCount(properties);
+	for (size_t i = 0; i < count; i++) {
+		JSStringRef jsNameRef = JSPropertyNameArrayGetNameAtIndex(properties, i);
+			
+		list->Add(JSCoreMarshal::JSStringToString(jsNameRef));
+	}
+
+	JSPropertyNameArrayRelease(properties);
+	return list;
+}
+
 #endif
 
