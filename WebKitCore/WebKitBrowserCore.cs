@@ -556,7 +556,7 @@ namespace WebKit
                 };
 
                 activationContext.Activate();
-                webView = new WebView();
+                webView = new WebViewClass();
                 activationContext.Deactivate();
             }
         }
@@ -815,7 +815,7 @@ namespace WebKit
 
                 activationContext.Activate();
 
-                WebMutableURLRequest request = new WebMutableURLRequest();
+                WebMutableURLRequest request = new WebMutableURLRequestClass();
                 request.initWithURL(url, _WebURLRequestCachePolicy.WebURLRequestUseProtocolCachePolicy, 60);
                 request.setHTTPMethod("GET");
 

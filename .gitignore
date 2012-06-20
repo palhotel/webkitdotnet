@@ -9,3 +9,4 @@ Release/
 Debug/
 *.ncb
 TypeNormalizer.exe
+WebKit.interop.dll
