@@ -14,7 +14,7 @@
     <ProjectGuid>{287EEE45-1390-44D5-982F-0B96D4A077DA}</ProjectGuid>
     <RootNamespace>JSCore</RootNamespace>
     <Keyword>ManagedCProj</Keyword>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -22,13 +22,13 @@
     <CharacterSet>Unicode</CharacterSet>
     <CLRSupport>true</CLRSupport>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <CLRSupport>true</CLRSupport>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -50,6 +50,11 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <LinkKeyFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\WebKit.NET.snk</LinkKeyFile>
     <LinkKeyFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\WebKit.NET.snk</LinkKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>F:\Program Files %28x86%29\Microsoft Visual Studio 11.0\VC\include;F:\Program Files %28x86%29\Microsoft Visual Studio 11.0\VC\atlmfc\include;$(IncludePath)</IncludePath>
+    <ReferencePath>F:\Program Files %28x86%29\Microsoft Visual Studio 11.0\VC\lib;F:\Program Files %28x86%29\Microsoft Visual Studio 11.0\VC\atlmfc\lib;$(ReferencePath)</ReferencePath>
+    <LibraryPath>F:\Program Files %28x86%29\Microsoft Visual Studio 11.0\VC\lib;F:\Program Files %28x86%29\Microsoft Visual Studio 11.0\VC\atlmfc\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
@@ -104,7 +109,8 @@ tlbimp "$(SolutionDir)webkit\lib\webkit.tlb" /silent /keyfile:"$(SolutionDir)Web
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </Reference>
-    <Reference Include="WebKit.Interop, Version=534.0.0.0, Culture=neutral, PublicKeyToken=b967213f6d29a3be">
+    <Reference Include="System.Core" />
+    <Reference Include="WebKit.Interop">
       <HintPath>..\bin\net4.0\WebKit.Interop.dll</HintPath>
     </Reference>
   </ItemGroup>

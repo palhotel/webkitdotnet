@@ -9,7 +9,7 @@ LICENSE.txt for details.
 This package currently contains 3 VS solutions.
 WebKit.NET.sln		- VS2008 .Net 2.0.
 WebKit.NET_2010.sln	- VS2010 .Net 2.0.
-WebKit.net4.0.sln	- VS2010 .Net 4.0.
+WebKit.net4.0.sln	- VS2012 .Net 4.5.
 
 WebKit library (including dependencies) are in the following folders:
 

@@ -30,3 +30,4 @@ _ReSharper*/
 StyleCop.Cache
 *.opensdf
 *.sdf
+ipch/
